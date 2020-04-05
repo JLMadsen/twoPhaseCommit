@@ -1,10 +1,18 @@
 export let action = {
-    commit: 1,
-    vote: 2,
+    // startup
+    setup: 100,
+    newClient: 101,
 
-    voteYes: 3,
-    voteNo: 4,
+    // phases
+    commit: 102,
+    requestVote: 103,  // send to participants
+    vote: 104,         // send to coordinator with answer
 
-    success: 5,
-    rollback: 6
+    // voting
+    voteYes: 201,
+    voteNo: 202,
+
+    // commit
+    success: 301,
+    rollback: 302
 };

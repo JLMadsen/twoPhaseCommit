@@ -23,3 +23,14 @@ body{
     left: 0;
     right: 0;
 }
+
+.bankers {
+    height: 500px;
+
+    background-position: center; /* Center the image */
+    background-repeat: no-repeat; /* Do not repeat the image */
+    background-size: cover; /* Resize the background image to cover the entire container */
+
+    background-image: url("bank-0-1529615071607.jpg");
+    background-color: #cccccc;
+}

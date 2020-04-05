@@ -1,12 +1,18 @@
 # twoPhaseCommit
-2PC 
 
+## Usage
+In root dir: 
+`npm install`
 
-## ref
+In root dir: 
+`npm start`
+
+In server dir:
+`node socketServer`
+
+## References
 
 https://iajit.org/PDF/vol.3,no.1/4-Toufik.pdf
-
-https://medium.com/@epatro/how-to-implement-a-two-phase-commit-mechanism-in-a-microservice-e99d9a32445e
 
 https://github.com/facebook/rocksdb/wiki/Two-Phase-Commit-Implementation
 
