@@ -25,3 +25,4 @@ twophasecommit.iml
 package-lock.json
 *.xml
 *.rar
+*.gif
