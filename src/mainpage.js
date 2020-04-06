@@ -92,7 +92,7 @@ export class MainPage extends Component {
                     this.setState({oldbalance: this.state.localBalance, localBalance: commitBalance});
 
                     let vote = "";
-                    let ok = Math.random() <= .8;
+                    let ok = true //Math.random() <= .8;
 
                     if(ok){
                         vote =

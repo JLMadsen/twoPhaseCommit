@@ -14,7 +14,8 @@ export let action = {
 
     // commit
     success: 301,
-    rollback: 302
+    rollback: 302,
+    acknowledge: 302
 };
 
 // for logging
