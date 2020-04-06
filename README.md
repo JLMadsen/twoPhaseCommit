@@ -1,5 +1,3 @@
-# twoPhaseCommit
-
 ## Demo
 
 ![Demo gif](https://i.imgur.com/I8BP4MC.gif)
