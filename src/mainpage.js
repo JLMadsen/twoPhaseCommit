@@ -7,7 +7,7 @@ import Card from "react-bootstrap/Card";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner";
-import {action} from "./components/action";
+import {action, getDesc} from "./components/action";
 import Badge from "react-bootstrap/Badge";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
@@ -261,26 +261,11 @@ export class MainPage extends Component {
         );
     }
 
-    getActionName(key) {
-        return Object.keys(action).find(a => action[a] === key);
-    }
-
     appendLog(content){
         let output = "";
 
-        try {
-            for(let i=0; i<content.length; i++){
-                let key = content[i];
-
-                try{
-                    output += ','+ this.getActionName(key);
-                }catch (e) {
-                    output += ','+ key;
-                }
-
-            }
-        }catch (e) {
-            output = content;
+        for(let i=0; i<content.length; i++) {
+            output += getDesc(content[i]) +', ';
         }
 
         if(this.state.log) {
