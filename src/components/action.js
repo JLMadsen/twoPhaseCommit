@@ -41,8 +41,11 @@ export function getDesc(key) {
             return "rollback";
         default:
             return key;
-
     }
+}
 
-
+export class Vote{
+    yes;
+    id;
+    temp = false;
 }

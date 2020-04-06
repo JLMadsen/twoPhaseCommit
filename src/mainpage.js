@@ -7,10 +7,11 @@ import Card from "react-bootstrap/Card";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner";
-import {action, getDesc} from "./components/action";
+import {action, getDesc, Vote} from "./components/action";
 import Badge from "react-bootstrap/Badge";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
+import Alert from "react-bootstrap/Alert";
 
 let ws;
 let parser;
@@ -26,18 +27,21 @@ export class MainPage extends Component {
 
             // versions
             localBalance: 0,
+            oldBalance: 0,
             writeAheadLog: [],
-            transactions: [],
 
             // status
             isVoting: false,
-            voted: 0,
-            votedYes: 0,
+            votes: [],
 
             // role
             clientId: 0,
             isCoordinator: false,
             amountOfClients: 0,
+
+            // visual state
+            error: '',
+            errorType: 'success',
         };
 
         console.log('connecting to socket');
@@ -45,7 +49,7 @@ export class MainPage extends Component {
 
         ws.onmessage = (event) => {
             let content = event.data.split(',');
-            this.appendLog(content);
+            this.appendLog(content, true);
             let opcode = parseInt(content[0]);
             let WAL = this.state.writeAheadLog;
 
@@ -55,11 +59,13 @@ export class MainPage extends Component {
 
                     if(parseInt(content[1]) === action.newClient) {
                         this.setState({amountOfClients: parseInt(content[2])});
+                        break;
                     }
 
                     if(content[2].includes("coordinator")) {
-                        this.setState({clientId: parseInt(content[1]), isCoordinator: true});
+                        this.setState({isCoordinator: true});
                     }
+                    this.setState({clientId: parseInt(content[1])});
 
                     break;
                 case action.commit:
@@ -83,9 +89,10 @@ export class MainPage extends Component {
                     this.setState({isVoting: true});
                     let commitBalance = parseInt(content[2]);
                     WAL.push(commitBalance);
+                    this.setState({oldbalance: this.state.localBalance, localBalance: commitBalance});
 
                     let vote = "";
-                    let ok = true;
+                    let ok = Math.random() <= .8;
 
                     if(ok){
                         vote =
@@ -107,16 +114,24 @@ export class MainPage extends Component {
                 case action.vote:
                     console.log('switch - vote');
 
-                    this.setState({voted: this.state.voted + 1});
-                    let votedYes = parseInt(content[2]) === action.voteYes;
+                    let res = new Vote;
+                    res.id = parseInt(content[1]);
+                    res.yes = parseInt(content[2]) === action.voteYes;
 
-                    if(votedYes) {
-                        this.setState({votedYes: this.state.votedYes +1});
+                    let votes = this.state.votes;
+                    votes.push(res);
+                    this.setState({votes: votes});
+
+                    let successes = 0;
+                    for(let i=0; i<votes.length; i++){
+                        if(votes[i].yes){
+                            successes++;
+                        }
                     }
 
                     if(this.state.isCoordinator) {
-                        if(this.state.voted === this.state.amountOfClients) {
-                            if(this.state.votedYes === this.state.amountOfClients) {
+                        if(votes.length === this.state.amountOfClients) {
+                            if(successes === this.state.amountOfClients) {
                                 ws.send(action.success +','+ this.state.clientId);
                             } else {
                                 ws.send(action.rollback +','+ this.state.clientId);
@@ -131,20 +146,21 @@ export class MainPage extends Component {
                     let balance = WAL[WAL.length -1];
                     this.setState({
                             localBalance: balance,
-                            votedYes: 0,
-                            voted: 0,
-                            isVoting: false
                         });
+
+                    this.resetVoteState();
+                    this.setError('Commit successful!', 'success');
 
                     break;
                 case action.rollback:
                     console.log('switch - rollback');
 
                     this.setState({
-                        votedYes: 0,
-                        voted: 0,
-                        isVoting: false
+                        localBalance: this.state.oldBalance
                     });
+
+                    this.resetVoteState();
+                    this.setError('Commit aborted!', 'danger');
 
                     break;
                 default:
@@ -154,13 +170,31 @@ export class MainPage extends Component {
         };
 
         ws.onopen = () => {
-            this.appendLog("Connected to socket");
+            this.appendLog("Connected to socket", false);
         };
 
         ws.onerror = (err) => {
-            this.appendLog("Socket error!");
+            this.appendLog("Socket error!", false);
         };
     }
+
+    handleCommit(){
+        this.setState({isVoting: true, votes: []});
+        this.setError('', 'primary');
+
+        let commit =
+            action.commit +','+
+            this.state.clientId +','+
+            this.state.localBalance;
+
+        ws.send(commit);
+    }
+
+    /*
+
+    All code under here is only for visuals and not necessary for the two phase commit protocol.
+
+     */
 
     render() {
         return(
@@ -169,15 +203,13 @@ export class MainPage extends Component {
                     <Col className="col-lg-7">
                         <Card border="danger" className="p-2">
                             <div className="ml-2 text-center"><h1>Two Phase Commit Protocol</h1>
-
                                 <OverlayTrigger
                                     placement="right"
                                     overlay={
                                         <Tooltip>
                                             {
                                                 'isVoting '+ this.state.isVoting + '\n '+
-                                                'voted '+     this.state.voted + '\n '+
-                                                'votedYes '+     this.state.votedYes + '\n '+
+                                                'votes '+    this.state.votes + '\n '+
                                                 'isCoordinator '+    this.state.isCoordinator + '\n '+
                                                 'nClients '+    this.state.amountOfClients + '\n '+
                                                 'balance '+    this.state.localBalance
@@ -187,8 +219,11 @@ export class MainPage extends Component {
                                 >
                                     <Badge variant="secondary">State</Badge>
                                 </OverlayTrigger>
-
                             </div>
+
+                            {(this.state.error) ?
+                                <Alert style={{height: '3em'}} variant={this.state.errorType}>{this.state.error}</Alert> :
+                                <div style={{height: '3em'}}/>}
 
                             <div className="bankers">
 
@@ -251,7 +286,15 @@ export class MainPage extends Component {
                         <Card border="danger" className="p-2 mt-4">
                             <div className="ml-2 text-center"><h1>Voting</h1></div>
 
-                            { this.mapVotes().map(vote => {return <Badge className="m-1" pill variant={vote? "success" : "danger"}>{vote? "yes": "no"}</Badge>}) }
+                            { this.mapVotes().map(vote =>
+                            {return(
+                                        <Badge
+                                            className="m-1"
+                                            pill
+                                            variant={vote.temp? "secondary" : vote.yes? "success" : "danger"}>
+                                            client {vote.id}
+                                        </Badge>
+                            )})}
 
                         </Card>
 
@@ -261,11 +304,15 @@ export class MainPage extends Component {
         );
     }
 
-    appendLog(content){
+    appendLog(content, parse){
         let output = "";
 
-        for(let i=0; i<content.length; i++) {
-            output += getDesc(content[i]) +', ';
+        if(parse) {
+            for (let i = 0; i < content.length; i++) {
+                output += getDesc(content[i]) + ', ';
+            }
+        } else {
+            output = content;
         }
 
         if(this.state.log) {
@@ -275,26 +322,30 @@ export class MainPage extends Component {
         }
     }
 
-    async handleCommit(){
-        this.setState({isVoting: true});
-
-        let commit =
-            action.commit +','+
-            this.state.clientId +','+
-            this.state.localBalance;
-
-        ws.send(commit);
+    resetVoteState() {
+        this.setState({
+            votedYes: 0,
+            voted: 0,
+            isVoting: false});
     }
 
+    // fill empty votes aswell
     mapVotes() {
-        let clients = [];
+        let votes = Array.from(this.state.votes);
         for(let i=0; i<this.state.amountOfClients; i++){
-            if(i<this.state.votedYes){
-                clients.push(true);
-            } else {
-                clients.push(false);
+            if(!votes.some((e) => {return e.id === (i+1)})){
+                let tempVote = new Vote();
+                tempVote.id = i+1;
+                tempVote.temp = true;
+                votes.push(tempVote)
             }
         }
-        return clients;
+        return votes;
+    }
+
+    setError(message, variant) {
+        this.setState({error: message, errorType: variant});
+        if(!message) {return;}
+        setTimeout(() => {this.setState({error: '', errorType: 'primary'}); this.setState({votes: []});}, 5000);
     }
 }
