@@ -1,6 +1,6 @@
 ## Demo
 
-![Demo gif](https://i.imgur.com/I8BP4MC.gif)
+![Demo gif](https://i.imgur.com/25Gf5uq.gif)
 
 ## Usage
 In root dir: 
