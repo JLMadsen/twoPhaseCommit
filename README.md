@@ -19,6 +19,8 @@ After both of these phases the participants will answer with an akcnowledgement 
 
 ## Implementation
 
+For the communication i use a socket server, this acts as an intermediate for designating a coordinator and keeping count of clients. It also sends an echo of all incoming messages to all clients.
+
 The first client that connects to the socket server will be assigned the coordinator role, the rest are participants.
 
 When any client commits a new balance the coordinator will forward this commit to all clients with a requestVote message.
@@ -26,7 +28,7 @@ After a client reviews the commit it will either vote yes or no.
 
 The coordinator will count the votes and if any client voted no it will send an abort message to all clients, and they will rollback their local data. If all clients voted yes the coordinator will send a success message and all clients will write this new data to the local data.
 
-In this implementation participants only communicate with the coordinator.
+In this implementation participants all clients recieve all messages but only coordinator parses certain messages.
 
 ## Techstack
 
@@ -46,9 +48,11 @@ In this implementation participants only communicate with the coordinator.
 In root dir: 
 `npm install`
 
+### process 1
 In root dir: 
 `npm start`
 
+### process 2
 In server dir:
 `node socketServer`
 
