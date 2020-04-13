@@ -28,7 +28,11 @@ After a client reviews the commit it will either vote yes or no.
 
 The coordinator will count the votes and if any client voted no it will send an abort message to all clients, and they will rollback their local data. If all clients voted yes the coordinator will send a success message and all clients will write this new data to the local data.
 
-In this implementation participants all clients recieve all messages but only coordinator parses certain messages.
+### Choices
+
+In some cases i changed the concept and therefore i want to highlight the choices i made.
+
+- Instead direct client to client communication i use socket server which relays all messages to all other clients. In the original concept individual clients could communicate with each other, but because i chose to send it to all. I believe since this is already as system based upon voting, everyone should have access to the vote results.
 
 ## Techstack
 
