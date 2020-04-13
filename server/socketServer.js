@@ -1,6 +1,5 @@
 let WebSocket = require('ws');
 let ws_server = new WebSocket.Server({ port: 4001 });
-let coordinator;
 
 ws_server.on('connection', (connection) => {
     console.log('Opened a connection');
@@ -9,7 +8,6 @@ ws_server.on('connection', (connection) => {
     let nClients = ws_server.clients.size;
     if(nClients === 1) {
         connection.send(action.setup +","+ nClients + ", coordinator");
-        coordinator = connection;
     } else {
         connection.send(action.setup +","+ nClients + ", participant,");
     }

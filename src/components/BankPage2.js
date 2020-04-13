@@ -17,6 +17,8 @@ import {CommitHandler} from "./commitHandler";
 
 export class BankPage2 extends Component {
 
+    commitHandler;
+
     constructor(props) {
         super(props);
 
@@ -29,19 +31,53 @@ export class BankPage2 extends Component {
             errorType: 'success',
 
             localBalance: 0,
+            amountOfClients: 0,
             votes: [],
 
-        }
+        };
+
+        this.commitHandler = new CommitHandler();
+
+        this.commitHandler.onLog = (log) => {
+            console.log("onLog " + log);
+            this.setState({log: log})
+        };
+
+        this.commitHandler.onError = (message, color) => {
+            console.log("onError " + message +" "+ color);
+            this.setError(message, color);
+        };
+
+        this.commitHandler.setup = (nClients) => {
+            console.log("setup "+ nClients);
+            this.setState({amountOfClients: nClients});
+        };
+
+        this.commitHandler.newBalance = (balance) => {
+            console.log("newBalance " + balance);
+            this.setState({
+                localBalance: balance,
+                isVoting: false,
+            });
+        };
+
+        this.commitHandler.onVote = (votes) => {
+            this.setState({votes: votes});
+        };
+
+        this.commitHandler.connect();
+
+    }
+
+    handleCommit() {
+        this.setState({isVoting: true});
+        let balance = this.state.localBalance;
+        this.commitHandler.execCommit(balance);
     }
 
     render() {
         return(
             <Container >
-                <CommitHandler
-                    log={this.state.log}
-                    updateState={state => {this.setState(Object.assign({...state}));}}
-
-                />
                 <Row className="justify-content-lg-center mt-4">
                     <Col className="col-lg-7">
                         <Card border="warning" className="p-2">
@@ -64,7 +100,11 @@ export class BankPage2 extends Component {
                                                             readOnly={this.state.isVoting? true: false}
                                                             type="number"
                                                             placeholder={this.state.localBalance}
-                                                            onChange={(event) => {this.setState({localBalance: event.target.value});}}
+                                                            onChange={(event) => {
+                                                                let newbalance = parseInt(event.target.value);
+                                                                this.setState({localBalance: newbalance});
+                                                                this.commitHandler.setBalance(newbalance);
+                                                            }}
                                                         />
 
                                                         <Button
@@ -94,6 +134,21 @@ export class BankPage2 extends Component {
                                 </Container>
                             </div>
                         </Card>
+                        <OverlayTrigger
+                            placement="right"
+                            overlay={
+                                <Tooltip>
+                                    {
+                                        'isVoting '+ this.state.isVoting + '\n '+
+                                        'votes '+    this.state.votes + '\n '+
+                                        'nClients '+    this.state.amountOfClients + '\n '+
+                                        'balance '+    this.state.localBalance
+                                    }
+                                </Tooltip>
+                            }
+                        >
+                            <Badge variant="secondary">State</Badge>
+                        </OverlayTrigger>
                     </Col>
                     <Col className="col-lg-4">
                         <Card border="warning" className="p-2">
@@ -142,5 +197,11 @@ export class BankPage2 extends Component {
             }
         }
         return votes;
+    }
+
+    setError(message, variant) {
+        this.setState({error: message, errorType: variant});
+        if(!message) {return;}
+        setTimeout(() => {this.setState({error: '', errorType: 'primary'}); this.setState({votes: []});}, 5000);
     }
 }

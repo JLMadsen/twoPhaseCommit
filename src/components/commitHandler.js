@@ -1,47 +1,51 @@
-import {Component} from "react-simplified";
-import * as React from "react";
-
-import {action, getDesc, Vote} from "./action";
+import {action, Vote} from "./action";
 import {config} from "../config";
 
 /*
 Main class for handling the two phase commit protocol
  */
 
-export class CommitHandler extends Component{
+export class CommitHandler{
     websocket;
 
-    constructor(props) {
-        super(props);
+    // overridable methods
+    onLog;
+    onError;
+    setup;
+    newBalance;
 
-        this.state = {
-            // output log
-            log: "",
+    log;
+    clientId;
+    isCoordinator;
+    localBalance;
+    oldBalance;
+    WriteAheadLog;
+    isVoting;
+    votes;
+    amountOfClients;
 
-            // visual state
-            error: '',
-            errorType: 'success',
+    constructor() {
+        // output log
+        this.log = "";
 
-            // role
-            clientId: 0,
-            isCoordinator: false,
+        // role
+        this.clientId = 0;
+        this.isCoordinator = false;
 
-            // data
-            localData: 0,
-            oldData: 0,
-            WriteAheadLog: [],
+        // data
+        this.localBalance = 0;
+        this.oldBalance = 0;
+        this.WriteAheadLog = [];
 
-            // communication
-            isVoting: false,
-            votes: [],
-            amountOfClients: 0
-        };
-
-        this.websocketSetup();
+        // communication
+        this.isVoting = false;
+        this.votes = [];
+        this.amountOfClients = 0;
     }
 
-    websocketSetup() {
+    connect() {
         console.log('connecting to socket');
+
         this.websocket = new WebSocket("ws://localhost:4001");
 
         this.websocket.onopen = () => {
@@ -54,6 +58,7 @@ export class CommitHandler extends Component{
         };
 
         this.websocket.onMessage = (event) => {
+            console.log(event);
             let data = event.data.split(',');
             let opcode = data[0];
             this.appendLog(data);
@@ -84,23 +89,25 @@ export class CommitHandler extends Component{
                     this.onRollback(data);
                     break;
                 default:
-                    this.setState({error: "Unrecognized opcode", errorType: "warning"});
+                    if(this.onError) this.onError("Unrecognized opcode", "warning");
             }
-            this.updateState();
         }
     }
 
-    setBalance(bal){this.setState({localBalance: bal})}
+    setBalance(balance){
+        this.localBalance = balance;
+    }
 
     execCommit() {
 
-        this.setState({isVoting: true, votes: []});
-        this.setError('', 'primary');
+        this.isVoting = true;
+        this.votes = [];
+        if(this.onError) this.onError('', 'primary');
 
         let commit =
             action.commit +','+
-            this.state.clientId +','+
-            this.state.localBalance;
+            this.clientId +','+
+            this.localBalance;
 
         this.websocket.send(commit);
     }
@@ -108,23 +115,25 @@ export class CommitHandler extends Component{
     onSetup(data) {
 
         if(data[1] === action.newClient) {
-            this.setState({amountOfClients: parseInt(data[2])});
+            this.amountOfClients = parseInt(data[2]);
+            if(this.onSetup()) this.onSetup(parseInt(data[2]));
             return;
         }
 
         if(data[2].includes("coordinator")) {
-            this.setState({isCoordinator: true});
+            this.isCoordinator = true;
         }
-        this.setState({clientId: parseInt(data[1])});
+
+        this.clientId = parseInt(data[1]);
     }
 
     onCommit(data) {
 
-        if(this.state.isCoordinator) {
+        if(this.isCoordinator) {
 
             let request =
                 action.requestVote +','+
-                this.state.clientId  +','+
+                this.clientId  +','+
                 data[2];
 
             this.websocket.send(request);
@@ -133,33 +142,32 @@ export class CommitHandler extends Component{
 
     onRequestVote(data) {
 
-        this.setState({isVoting: true});
+        this.isVoting = true;
         let commitBalance = parseInt(data[2]);
 
-        let WAL = this.state.writeAheadLog;
-        WAL.push(commitBalance);
-        this.setState({oldData: this.state.localData, localData: commitBalance, writeAheadLog: WAL});
+        this.WriteAheadLog.push(commitBalance);
+        this.oldBalance = this.localBalance;
+        this.localBalance = commitBalance;
 
         let vote = "";
         let ok = false;
 
-        // check if localdata has been changed, dont overwrite unsaved changes.
-        //if(this.state.localData === )
-
-        // for testing
         if(config.alwaysTrue) {
             ok = true;
+        } else {
+            ok = false;
+            //TODO check stuff
         }
 
         if(ok){
             vote =
                 action.vote +','+
-                this.state.clientId +','+
+                this.clientId +','+
                 action.voteYes;
         } else {
             vote =
                 action.vote +','+
-                this.state.clientId +','+
+                this.clientId +','+
                 action.voteNo;
         }
 
@@ -177,75 +185,54 @@ export class CommitHandler extends Component{
     }
 
     onVote(data) {
-
         let res = new Vote();
         res.id = parseInt(data[1]);
         res.yes = (data[2] === action.voteYes);
 
-        let votes = this.state.votes;
-        votes.push(res);
-        this.setState({votes: votes});
+        this.votes.push(res);
+        if(this.onVote) this.onVote(this.votes);
 
         let successes = 0;
-        for(let i=0; i<votes.length; i++){
-            if(votes[i].yes){
+        for(let i=0; i<this.votes.length; i++){
+            if(this.votes[i].yes){
                 successes++;
             }
         }
 
-        if(this.state.isCoordinator) {
-            if(votes.length === this.state.amountOfClients) {
-                if(successes === this.state.amountOfClients) {
-                    this.websocket.send(action.success +','+ this.state.clientId);
+        if(this.isCoordinator) {
+            if(this.votes.length === this.amountOfClients) {
+                if(successes === this.amountOfClients) {
+                    this.websocket.send(action.success +','+ this.clientId);
                 } else {
-                    this.websocket.send(action.rollback +','+ this.state.clientId);
+                    this.websocket.send(action.rollback +','+ this.clientId);
                 }
             }
         }
     }
 
     onSuccess(data) {
+        this.localBalance = this.WriteAheadLog[this.WriteAheadLog.length -1];
 
-        let WAL = this.state.writeAheadLog;
-        let balance = WAL[WAL.length -1];
-        this.setState({
-            localData: balance,
-            writeAheadLog: WAL
-        });
-
-        this.setState({error: "Commit successful!", errorType: "success"});
+        if(this.onError) this.onError("Commit successful!", "success");
         this.resetVoteState();
     }
 
     onRollback(data) {
+        this.localBalance = this.oldBalance;
 
-        this.setState({
-            localData: this.state.oldData
-        });
-
-        this.setState({error: "Commit failed.", errorType: "danger"});
+        if(this.onError) this.onError("Commit failed.", "danger");
         this.resetVoteState();
     }
 
     resetVoteState() {
-        this.setState({
-            votedYes: 0,
-            voted: 0,
-            isVoting: false});
+        this.votes = [];
+        this.isVoting = false;
+
+        if(this.onVote) this.onVote(this.votes);
     }
 
     appendLog(content){
-
-        if(this.state.log) {
-            this.setState({log: this.state.log +"\n" + content})
-        } else {
-            this.setState({log: content})
-        }
+        this.log += content + "\n";
+        if(this.onLog) this.onLog(this.log);
     }
-
-    updateState() {
-        this.props.updateState(this.state);
-    }
-    render() {return(<div/>);}
-
 }
