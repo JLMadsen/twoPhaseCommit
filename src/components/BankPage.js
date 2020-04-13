@@ -7,16 +7,16 @@ import Card from "react-bootstrap/Card";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner";
-import {action, getDesc, Vote} from "./components/action";
+import {action, getDesc, Vote} from "./action";
 import Badge from "react-bootstrap/Badge";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import Alert from "react-bootstrap/Alert";
 
 let ws;
-let parser;
+let cardBorder = "warning";
 
-export class MainPage extends Component {
+export class BankPage extends Component {
 
     constructor(props) {
         super(props);
@@ -37,7 +37,7 @@ export class MainPage extends Component {
             // role
             clientId: 0,
             isCoordinator: false,
-            amountOfClients: 0,
+
 
             // visual state
             error: '',
@@ -49,15 +49,15 @@ export class MainPage extends Component {
 
         ws.onmessage = (event) => {
             let content = event.data.split(',');
-            this.appendLog(content, true);
-            let opcode = parseInt(content[0]);
+            this.appendLog(content);
+            let opcode = content[0];
             let WAL = this.state.writeAheadLog;
 
             switch (opcode) {
                 case action.setup:
                     console.log('switch - setup');
 
-                    if(parseInt(content[1]) === action.newClient) {
+                    if(content[1] === action.newClient) {
                         this.setState({amountOfClients: parseInt(content[2])});
                         break;
                     }
@@ -116,7 +116,7 @@ export class MainPage extends Component {
 
                     let res = new Vote;
                     res.id = parseInt(content[1]);
-                    res.yes = parseInt(content[2]) === action.voteYes;
+                    res.yes = (content[2] === action.voteYes);
 
                     let votes = this.state.votes;
                     votes.push(res);
@@ -170,11 +170,11 @@ export class MainPage extends Component {
         };
 
         ws.onopen = () => {
-            this.appendLog("Connected to socket", false);
+            this.appendLog("Connected to socket");
         };
 
         ws.onerror = (err) => {
-            this.appendLog("Socket error!", false);
+            this.appendLog("Socket error!");
         };
     }
 
@@ -201,7 +201,7 @@ export class MainPage extends Component {
             <Container >
                 <Row className="justify-content-lg-center mt-4">
                     <Col className="col-lg-7">
-                        <Card border="danger" className="p-2">
+                        <Card border={cardBorder} className="p-2">
                             <div className="ml-2 text-center"><h1>Two Phase Commit Protocol</h1>
                                 <OverlayTrigger
                                     placement="right"
@@ -270,7 +270,7 @@ export class MainPage extends Component {
                         </Card>
                     </Col>
                     <Col className="col-lg-4">
-                        <Card border="danger" className="p-2">
+                        <Card border={cardBorder} className="p-2">
                             <div className="ml-2 text-center"><h1>Network log</h1></div>
 
                             <Form.Control
@@ -283,7 +283,7 @@ export class MainPage extends Component {
 
                         </Card>
 
-                        <Card border="danger" className="p-2 mt-4">
+                        <Card border={cardBorder} className="p-2 mt-4">
                             <div className="ml-2 text-center"><h1>Voting</h1></div>
 
                             { this.mapVotes().map(vote =>
@@ -304,21 +304,11 @@ export class MainPage extends Component {
         );
     }
 
-    appendLog(content, parse){
-        let output = "";
-
-        if(parse) {
-            for (let i = 0; i < content.length; i++) {
-                output += getDesc(content[i]) + ', ';
-            }
-        } else {
-            output = content;
-        }
-
+    appendLog(content){
         if(this.state.log) {
-            this.setState({log: this.state.log +"\n" + output})
+            this.setState({log: this.state.log +"\n" + content})
         } else {
-            this.setState({log: output})
+            this.setState({log: content})
         }
     }
 

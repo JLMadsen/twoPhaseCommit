@@ -3,7 +3,9 @@ import {Route, BrowserRouter} from 'react-router-dom';
 import ReactDOM from 'react-dom';
 import {createBrowserHistory} from "history";
 
-import {MainPage} from "./mainpage";
+import {BankPage} from "./components/BankPage";
+import {BankPage2} from "./components/BankPage2";
+import {BankParent} from "./components/BankParent";
 
 const history = createBrowserHistory();
 const root = document.getElementById('root');
@@ -11,7 +13,8 @@ if (root) {
     ReactDOM.render(
         <BrowserRouter history={history}>
 
-            <Route path="/" component={MainPage}/>
+            <Route exact path="/" component={BankPage}/>
+            <Route path="/dev" component={BankPage2}/>
 
         </BrowserRouter>,
         root

@@ -48,19 +48,24 @@ const updateNClients = () => {
 
 let action = {
     // startup
-    setup: 100,
-    newClient: 101,
+    setup: "Setup",
+    newClient: "NewClient",
 
     // phases
-    commit: 102,
-    requestVote: 103,  // send to participants
-    vote: 104,         // send to coordinator with answer
+    commit: "Commit",
+    requestVote: "RequestVote",  // send to participants
+    vote: "Vote",         // send to coordinator with answer
 
     // voting
-    voteYes: 201,
-    voteNo: 202,
+    voteYes: "VoteYes",
+    voteNo: "VoteNo",
 
     // commit
-    success: 301,
-    rollback: 302
+    success: "Success",
+    rollback: "Rollback",
+    acknowledge: "Acknowledge",
+
+    // abort message
+    dataMismatch: "DataMismatch",
+    writeError: "WriteError"
 };
