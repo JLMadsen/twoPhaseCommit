@@ -7,11 +7,13 @@ import Card from "react-bootstrap/Card";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner";
-import {action, getDesc, Vote} from "./action";
 import Badge from "react-bootstrap/Badge";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import Alert from "react-bootstrap/Alert";
+
+import {config} from "../config";
+import {action, Vote} from "./action";
 
 let ws;
 let cardBorder = "warning";
@@ -92,7 +94,13 @@ export class BankPage extends Component {
                     this.setState({oldbalance: this.state.localBalance, localBalance: commitBalance});
 
                     let vote = "";
-                    let ok = true //Math.random() <= .8;
+                    let ok = false;
+
+                    if(config.alwaysTrue) {
+                        ok = true;
+                    } else {
+                        ok = Math.random() <= .8;
+                    }
 
                     if(ok){
                         vote =
@@ -106,9 +114,15 @@ export class BankPage extends Component {
                             action.voteNo;
                     }
 
-                    // slow down system to see communication
-                    let timeout = Math.random() * (7000 - 2500) + 2500;
-                    setTimeout(() => {ws.send(vote);}, timeout);
+                    if(config.timedAnswer) {
+                        // slow down system to see communication
+                        let timeout = Math.random() * (7000 - 2500) + 2500;
+                        setTimeout(() => {
+                            ws.send(vote);
+                        }, timeout);
+                    } else {
+                        ws.send(vote);
+                    }
 
                     break;
                 case action.vote:
@@ -202,24 +216,7 @@ export class BankPage extends Component {
                 <Row className="justify-content-lg-center mt-4">
                     <Col className="col-lg-7">
                         <Card border={cardBorder} className="p-2">
-                            <div className="ml-2 text-center"><h1>Two Phase Commit Protocol</h1>
-                                <OverlayTrigger
-                                    placement="right"
-                                    overlay={
-                                        <Tooltip>
-                                            {
-                                                'isVoting '+ this.state.isVoting + '\n '+
-                                                'votes '+    this.state.votes + '\n '+
-                                                'isCoordinator '+    this.state.isCoordinator + '\n '+
-                                                'nClients '+    this.state.amountOfClients + '\n '+
-                                                'balance '+    this.state.localBalance
-                                            }
-                                        </Tooltip>
-                                    }
-                                >
-                                    <Badge variant="secondary">State</Badge>
-                                </OverlayTrigger>
-                            </div>
+                            <div className="ml-2 text-center"><h1>Two Phase Commit Protocol</h1></div>
 
                             {(this.state.error) ?
                                 <Alert style={{height: '3em'}} variant={this.state.errorType}>{this.state.error}</Alert> :
@@ -268,6 +265,22 @@ export class BankPage extends Component {
                                 </Container>
                             </div>
                         </Card>
+                        <OverlayTrigger
+                            placement="right"
+                            overlay={
+                                <Tooltip>
+                                    {
+                                        'isVoting '+ this.state.isVoting + '\n '+
+                                        ',votes '+    this.state.votes.map(v => v.yes).toString() + '\n '+
+                                        ',isCoordinator '+    this.state.isCoordinator + '\n '+
+                                        ',nClients '+    this.state.amountOfClients + '\n '+
+                                        ',balance '+    this.state.localBalance
+                                    }
+                                </Tooltip>
+                            }
+                        >
+                            <Badge variant="secondary">State</Badge>
+                        </OverlayTrigger>
                     </Col>
                     <Col className="col-lg-4">
                         <Card border={cardBorder} className="p-2">
