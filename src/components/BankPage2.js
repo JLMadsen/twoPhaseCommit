@@ -32,6 +32,7 @@ export class BankPage2 extends Component {
 
             localBalance: 0,
             amountOfClients: 0,
+            isVoting: false,
             votes: [],
 
         };
