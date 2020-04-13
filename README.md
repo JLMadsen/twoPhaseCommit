@@ -19,6 +19,8 @@ After both of these phases the participants will answer with an akcnowledgement 
 
 ## Implementation
 
+This implementation is based around a simple web bank. We have one account with a balance, we can change this balance and commit it.
+
 For the communication i use a socket server, this acts as an intermediate for designating a coordinator and keeping count of clients. It also sends an echo of all incoming messages to all clients.
 
 The first client that connects to the socket server will be assigned the coordinator role, the rest are participants.
@@ -27,6 +29,13 @@ When any client commits a new balance the coordinator will forward this commit t
 After a client reviews the commit it will either vote yes or no.
 
 The coordinator will count the votes and if any client voted no it will send an abort message to all clients, and they will rollback their local data. If all clients voted yes the coordinator will send a success message and all clients will write this new data to the local data.
+
+### Features
+
+- Commit a new balance to the account
+- Send commit to other clients
+- Live voting
+- Full network log
 
 ### Choices
 
@@ -43,6 +52,7 @@ In some cases i changed the concept and therefore i want to highlight the choice
 ## Future work
 
 - More testing
+- P2P encryption?
 
 ## Demo
 
