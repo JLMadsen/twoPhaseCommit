@@ -52,13 +52,12 @@ export class CommitHandler{
             this.appendLog("Connected to socket");
         };
 
-        this.websocket.onError = (err) => {
+        this.websocket.onerror = (err) => {
             this.appendLog("Socket error!");
             console.log(err);
         };
 
-        this.websocket.onMessage = (event) => {
-            console.log(event);
+        this.websocket.onmessage = (event) => {
             let data = event.data.split(',');
             let opcode = data[0];
             this.appendLog(data);
