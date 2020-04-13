@@ -11,7 +11,7 @@ export class CommitHandler{
     // overridable methods
     onLog;
     onError;
-    setup;
+    clientCount;
     newBalance;
 
     log;
@@ -115,7 +115,7 @@ export class CommitHandler{
 
         if(data[1] === action.newClient) {
             this.amountOfClients = parseInt(data[2]);
-            if(this.onSetup()) this.onSetup(parseInt(data[2]));
+            if(this.clientCount()) this.clientCount(this.amountOfClients);
             return;
         }
 
@@ -148,7 +148,7 @@ export class CommitHandler{
         this.oldBalance = this.localBalance;
         this.localBalance = commitBalance;
 
-        let vote = "";
+
         let ok = false;
 
         if(config.alwaysTrue) {
@@ -158,16 +158,14 @@ export class CommitHandler{
             //TODO check stuff
         }
 
+        let vote =
+            action.vote +','+
+            this.clientId +',';
+
         if(ok){
-            vote =
-                action.vote +','+
-                this.clientId +','+
-                action.voteYes;
+            vote += action.voteYes;
         } else {
-            vote =
-                action.vote +','+
-                this.clientId +','+
-                action.voteNo;
+            vote += action.voteNo;
         }
 
         // slow down system to see communication

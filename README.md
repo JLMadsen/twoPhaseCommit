@@ -53,6 +53,7 @@ In some cases i changed the concept and therefore i want to highlight the choice
 
 - More testing
 - P2P encryption?
+- Less name ambiguity
 
 ## Demo
 

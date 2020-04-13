@@ -40,22 +40,19 @@ export class BankPage2 extends Component {
         this.commitHandler = new CommitHandler();
 
         this.commitHandler.onLog = (log) => {
-            console.log("onLog " + log);
             this.setState({log: log})
         };
 
         this.commitHandler.onError = (message, color) => {
-            console.log("onError " + message +" "+ color);
             this.setError(message, color);
         };
 
-        this.commitHandler.setup = (nClients) => {
-            console.log("setup "+ nClients);
+        this.commitHandler.clientCount = (nClients) => {
+            console.log(nClients);
             this.setState({amountOfClients: nClients});
         };
 
         this.commitHandler.newBalance = (balance) => {
-            console.log("newBalance " + balance);
             this.setState({
                 localBalance: balance,
                 isVoting: false,
