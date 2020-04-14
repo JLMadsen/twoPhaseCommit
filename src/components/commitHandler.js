@@ -12,35 +12,36 @@ export class CommitHandler {
     onPhaseChange;
     onVote;
 
+    // log with all network packets
     log;
     clientId;
-    isCoordinator;
+
     globalBalance;
     localBalance;
     oldBalance;
     WriteAheadLog;
+
+    isCoordinator;
     isVoting;
-    isSender;
+    isSender; // sender does not need to compare local changes
+    isFresh;  // fresh client does not need to compare local changes
     votes;
     amountOfClients;
 
+
     constructor() {
-        // output log
         this.log = "";
-
-        // role
         this.clientId = 0;
-        this.isCoordinator = false;
 
-        // data
         this.globalBalance = 0;
         this.localBalance = 0;
         this.oldBalance = 0;
         this.WriteAheadLog = [];
 
-        // communication
+        this.isCoordinator = false;
         this.isVoting = false;
         this.isSender = false;
+        this.isFresh = true;
         this.votes = [];
         this.amountOfClients = 0;
     }
@@ -151,6 +152,12 @@ export class CommitHandler {
 
     handleRequestVote(data) {
 
+        /*console.log("Response to vote");
+        console.log("local: " + this.localBalance);
+        console.log("global: " + this.globalBalance);
+        console.log("old: " + this.oldBalance);
+        console.log("WAL: " + this.WriteAheadLog);*/
+
         this.isVoting = true;
         let commitBalance = parseInt(data[2]);
 
@@ -158,26 +165,30 @@ export class CommitHandler {
         this.oldBalance = this.localBalance;
         this.localBalance = commitBalance;
 
+        if(this.onPhaseChange) this.onPhaseChange(action.commit);
         if(this.onNewBalance) this.onNewBalance(this.localBalance);
 
-        let ok = false;
+        let ok = true;
         let desc;
 
-        if(config.alwaysTrue) {
-
-            ok = true;
-        } else {
-
+        if(!config.alwaysTrue && !this.isSender) {
             // if client has local changes
-            if(this.localBalance !== this.globalBalance && !this.isSender) {
-                ok = false;
-                desc = action.dataMismatch;
+            // this can be disabled in config
+            if(!config.overwrite) {
+                if(!this.isFresh) {
+                    if(this.oldBalance !== this.globalBalance) {
+                        ok = false;
+                        desc = action.dataMismatch;
+                    }
+                }
             }
 
             // this checks if the newBalance method has been implemented
-            if(!this.onNewBalance && config.requireNewBalance) {
-                ok = false;
-                desc = action.writeError;
+            if(config.requireNewBalance) {
+                if (!this.onNewBalance) {
+                    ok = false;
+                    desc = action.writeError;
+                }
             }
         }
 
@@ -204,7 +215,6 @@ export class CommitHandler {
 
             this.websocket.send(vote);
         }
-
     }
 
     handleVote(data) {
@@ -240,6 +250,7 @@ export class CommitHandler {
 
     handleSuccess(data) {
         this.isVoting = false;
+        this.isFresh = false;
         this.localBalance = this.WriteAheadLog[this.WriteAheadLog.length -1];
         this.globalBalance = this.localBalance;
 
@@ -248,11 +259,11 @@ export class CommitHandler {
         if(this.onError) this.onError("Commit successful!", "success");
 
         this.votes = [];
-        if(this.onVote) this.onVote(this.votes);
     }
 
     handleRollback(data) {
         this.isVoting = false;
+        this.isFresh = false;
         this.localBalance = this.oldBalance;
 
         if(this.onNewBalance) this.onNewBalance(this.oldBalance);
@@ -260,7 +271,6 @@ export class CommitHandler {
         if(this.onError) this.onError("Commit failed.", "danger");
 
         this.votes = [];
-        if(this.onVote) this.onVote(this.votes);
     }
 
     appendLog(content){

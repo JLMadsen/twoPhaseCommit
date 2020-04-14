@@ -7,7 +7,7 @@ export let action = {
     // phases
     commit: "Commit",
     requestVote: "RequestVote",  // send to participants
-    vote: "Vote",         // send to coordinator with answer
+    vote: "Vote",                // send to coordinator with answer
 
     // voting
     voteYes: "VoteYes",
