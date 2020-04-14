@@ -54,6 +54,61 @@ In some cases i changed the concept and therefore i want to highlight the choice
 - More testing
 - P2P encryption?
 
+## Code example
+
+```
+let commitHandler = new CommitHandler();
+
+commitHandler.onLog = (log) => {
+
+  // log contains whole network log
+};
+
+commitHandler.onError = (message, color) => {
+
+  // message contains error message
+  // color is based on bootstrap colors such as "success" and "danger"
+};
+
+commitHandler.newBalance = (balance) => {
+
+  // handle balance change
+};
+
+commitHandler.clientCount = (nClients) => {
+
+  // notify when client connects or disconnects
+  // nClients is number of conncted clients
+};
+
+commitHandler.phaseChange = (phase) => {
+  // phase is an action object which is defined in components folder
+  
+  switch (phase) {
+    case action.commit:
+    
+      // do stuff ...
+      
+    case action.success:
+    
+      // do stuff ...
+      
+    case action.abort:
+    
+      // do stuff ...
+};
+
+// connects to socket
+// you should implement the above methods before connection
+
+commitHandler.connect();
+
+// to send commit
+
+commitHandler.execCommit(balance);
+
+```
+
 ## Demo
 
 ![Demo gif](https://i.imgur.com/25Gf5uq.gif)
