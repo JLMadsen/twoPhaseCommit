@@ -122,7 +122,7 @@ commitHandler.resetBalance();
 
 ## Demo
 
-![Demo gif](https://i.imgur.com/25Gf5uq.gif)
+![Demo gif](https://i.imgur.com/xoE2JTM.gif)
 
 ## Installasion and usage
 In root dir: 
