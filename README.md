@@ -1,5 +1,7 @@
 # Two Phase Commit - 2PC
 
+[![Build Status](https://travis-ci.com/JLMadsen/twoPhaseCommit.svg?token=wJdgix4kVLGxzJzesfZK&branch=master)](https://travis-ci.com/JLMadsen/twoPhaseCommit)
+
 ## Introduction
 
 Two Phase Commit protocol is a version control based around voting. In a group of clients which have shared data and want to change it, we can commit a change. But in this case all the clients vote on each commit, if all agree on the change it will be commited, if not it will be aborted. 
