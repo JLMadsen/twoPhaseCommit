@@ -12,7 +12,7 @@ import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import Alert from "react-bootstrap/Alert";
 
-import {Vote} from "./action";
+import {action, Vote} from "./action";
 import {CommitHandler} from "./commitHandler";
 
 export class BankPage2 extends Component {
@@ -33,6 +33,7 @@ export class BankPage2 extends Component {
             localBalance: 0,
             amountOfClients: 0,
             isVoting: false,
+            isCoordinator: false,
             votes: [],
 
         };
@@ -47,30 +48,48 @@ export class BankPage2 extends Component {
             this.setError(message, color);
         };
 
-        this.commitHandler.clientCount = (nClients) => {
-            console.log(nClients);
-            this.setState({amountOfClients: nClients});
+        this.commitHandler.onSetup = (nClients, isCoordinator) => {
+            this.setState({
+                amountOfClients: nClients,
+                isCoordinator: isCoordinator,
+            });
         };
 
-        this.commitHandler.newBalance = (balance) => {
+        this.commitHandler.onNewBalance = (balance) => {
             this.setState({
                 localBalance: balance,
-                isVoting: false,
             });
+        };
+
+        this.commitHandler.onPhaseChange = (phase) => {
+
+            switch (phase) {
+                case action.commit:
+                    this.setState({isVoting: true});
+                    break;
+                case action.success:
+                    this.setState({isVoting: false});
+                    break;
+                case action.abort:
+                    this.setState({isVoting: false});
+                    break;
+                default:
+                    break;
+            }
         };
 
         this.commitHandler.onVote = (votes) => {
             this.setState({votes: votes});
         };
 
+        // start commitHandler after implementing methods
         this.commitHandler.connect();
 
     }
 
     handleCommit() {
         this.setState({isVoting: true});
-        let balance = this.state.localBalance;
-        this.commitHandler.execCommit(balance);
+        this.commitHandler.execCommit(this.state.localBalance);
     }
 
     render() {
@@ -137,10 +156,11 @@ export class BankPage2 extends Component {
                             overlay={
                                 <Tooltip>
                                     {
-                                        'isVoting '+ this.state.isVoting + '\n '+
-                                        'votes '+    this.state.votes + '\n '+
-                                        'nClients '+    this.state.amountOfClients + '\n '+
-                                        'balance '+    this.state.localBalance
+                                        'isVoting '+      this.state.isVoting + '\n,'+
+                                        'votes '+         this.state.votes.map(e => e.yes) + '\n,'+
+                                        'nClients '+      this.state.amountOfClients + '\n,'+
+                                        'balance '+       this.state.localBalance  + '\n,'+
+                                        'isCoordinator '+ this.state.isCoordinator
                                     }
                                 </Tooltip>
                             }

@@ -1,26 +1,26 @@
 import {action, Vote} from "./action";
 import {config} from "../config";
 
-/*
-Main class for handling the two phase commit protocol
- */
-
-export class CommitHandler{
+export class CommitHandler {
     websocket;
 
     // overridable methods
     onLog;
     onError;
-    clientCount;
-    newBalance;
+    onSetup;
+    onNewBalance;
+    onPhaseChange;
+    onVote;
 
     log;
     clientId;
     isCoordinator;
+    globalBalance;
     localBalance;
     oldBalance;
     WriteAheadLog;
     isVoting;
+    isSender;
     votes;
     amountOfClients;
 
@@ -33,12 +33,14 @@ export class CommitHandler{
         this.isCoordinator = false;
 
         // data
+        this.globalBalance = 0;
         this.localBalance = 0;
         this.oldBalance = 0;
         this.WriteAheadLog = [];
 
         // communication
         this.isVoting = false;
+        this.isSender = false;
         this.votes = [];
         this.amountOfClients = 0;
     }
@@ -65,32 +67,37 @@ export class CommitHandler{
             switch (opcode) {
                 case action.setup:
                     console.log('SETUP: ' + data);
-                    this.onSetup(data);
+                    this.handleSetup(data);
                     break;
                 case action.commit:
                     console.log('COMMIT: ' + data);
-                    this.onCommit(data);
+                    this.handleCommit(data);
                     break;
                 case action.requestVote:
                     console.log('REQUESTVOTE: ' + data);
-                    this.onRequestVote(data);
+                    this.handleRequestVote(data);
                     break;
                 case action.vote:
                     console.log('VOTE: ' + data);
-                    this.onVote(data);
+                    this.handleVote(data);
                     break;
                 case action.success:
                     console.log('SUCCESS: ' + data);
-                    this.onSuccess(data);
+                    this.handleSuccess(data);
                     break;
                 case action.rollback:
                     console.log('ROLLBACK: ' + data);
-                    this.onRollback(data);
+                    this.handleRollback(data);
                     break;
                 default:
                     if(this.onError) this.onError("Unrecognized opcode", "warning");
             }
         }
+    }
+
+    resetBalance() {
+        this.localBalance = this.globalBalance;
+        if(this.onNewBalance) this.onNewBalance(this.localBalance)
     }
 
     setBalance(balance){
@@ -99,8 +106,11 @@ export class CommitHandler{
 
     execCommit() {
 
+        this.isSender = true;
         this.isVoting = true;
         this.votes = [];
+
+        // reset visual error, could move this out
         if(this.onError) this.onError('', 'primary');
 
         let commit =
@@ -111,11 +121,11 @@ export class CommitHandler{
         this.websocket.send(commit);
     }
 
-    onSetup(data) {
+    handleSetup(data) {
 
         if(data[1] === action.newClient) {
             this.amountOfClients = parseInt(data[2]);
-            if(this.clientCount()) this.clientCount(this.amountOfClients);
+            if(this.onSetup) this.onSetup(this.amountOfClients, this.isCoordinator);
             return;
         }
 
@@ -126,7 +136,7 @@ export class CommitHandler{
         this.clientId = parseInt(data[1]);
     }
 
-    onCommit(data) {
+    handleCommit(data) {
 
         if(this.isCoordinator) {
 
@@ -139,7 +149,7 @@ export class CommitHandler{
         }
     }
 
-    onRequestVote(data) {
+    handleRequestVote(data) {
 
         this.isVoting = true;
         let commitBalance = parseInt(data[2]);
@@ -148,14 +158,27 @@ export class CommitHandler{
         this.oldBalance = this.localBalance;
         this.localBalance = commitBalance;
 
+        if(this.onNewBalance) this.onNewBalance(this.localBalance);
 
         let ok = false;
+        let desc;
 
         if(config.alwaysTrue) {
+
             ok = true;
         } else {
-            ok = false;
-            //TODO check stuff
+
+            // if client has local changes
+            if(this.localBalance !== this.globalBalance && !this.isSender) {
+                ok = false;
+                desc = action.dataMismatch;
+            }
+
+            // this checks if the newBalance method has been implemented
+            if(!this.onNewBalance && config.requireNewBalance) {
+                ok = false;
+                desc = action.writeError;
+            }
         }
 
         let vote =
@@ -167,6 +190,9 @@ export class CommitHandler{
         } else {
             vote += action.voteNo;
         }
+
+        // if voted no we have error message
+        if(desc) vote += ","+ desc;
 
         // slow down system to see communication
         if(config.timedAnswer) {
@@ -181,7 +207,7 @@ export class CommitHandler{
 
     }
 
-    onVote(data) {
+    handleVote(data) {
         let res = new Vote();
         res.id = parseInt(data[1]);
         res.yes = (data[2] === action.voteYes);
@@ -189,15 +215,20 @@ export class CommitHandler{
         this.votes.push(res);
         if(this.onVote) this.onVote(this.votes);
 
-        let successes = 0;
-        for(let i=0; i<this.votes.length; i++){
-            if(this.votes[i].yes){
-                successes++;
-            }
-        }
-
+        console.log("isCoordinator: "+ this.isCoordinator);
         if(this.isCoordinator) {
             if(this.votes.length === this.amountOfClients) {
+
+
+                let successes = 0;
+                for(let i=0; i<this.votes.length; i++){
+                    if(this.votes[i].yes){
+                        successes++;
+                    }
+                }
+
+                console.log(successes);
+
                 if(successes === this.amountOfClients) {
                     this.websocket.send(action.success +','+ this.clientId);
                 } else {
@@ -207,24 +238,28 @@ export class CommitHandler{
         }
     }
 
-    onSuccess(data) {
+    handleSuccess(data) {
+        this.isVoting = false;
         this.localBalance = this.WriteAheadLog[this.WriteAheadLog.length -1];
+        this.globalBalance = this.localBalance;
 
+        if(this.onNewBalance) this.onNewBalance(this.localBalance);
+        if(this.onPhaseChange) this.onPhaseChange(action.success);
         if(this.onError) this.onError("Commit successful!", "success");
-        this.resetVoteState();
+
+        this.votes = [];
+        if(this.onVote) this.onVote(this.votes);
     }
 
-    onRollback(data) {
+    handleRollback(data) {
+        this.isVoting = false;
         this.localBalance = this.oldBalance;
 
+        if(this.onNewBalance) this.onNewBalance(this.oldBalance);
+        if(this.onPhaseChange) this.onPhaseChange(action.abort);
         if(this.onError) this.onError("Commit failed.", "danger");
-        this.resetVoteState();
-    }
 
-    resetVoteState() {
         this.votes = [];
-        this.isVoting = false;
-
         if(this.onVote) this.onVote(this.votes);
     }
 
