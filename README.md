@@ -129,11 +129,11 @@ commitHandler.resetBalance();
 In root dir: 
 `npm install`
 
-### process 1
+### Client
 In root dir: 
 `npm start`
 
-### process 2
+### Server
 In server dir:
 `node socketServer`
 
