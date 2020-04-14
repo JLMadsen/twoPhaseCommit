@@ -109,10 +109,6 @@ commitHandler.connect();
 
 // to send commit
 
-commitHandler.execCommit(balance);
-
-// it is also possible to set balance before commit
-
 commitHandler.setBalance(balance);
 commitHandler.execCommit();
 
