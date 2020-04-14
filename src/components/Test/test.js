@@ -1,13 +1,15 @@
 import {CommitHandler} from "../CommitHandler";
 
-describe("Connect to socket", () => {
+describe("Test CommitHandler", () => {
 
     let commitHandler = new CommitHandler();
 
-    test("should connect", () => {
+    test("Update balance", () => {
 
-        commitHandler.connect();
+        let balance = 420;
+        commitHandler.setBalance(balance);
 
+        expect(commitHandler.localBalance).toEqual(balance);
     })
 
 });
