@@ -111,6 +111,14 @@ commitHandler.connect();
 
 commitHandler.execCommit(balance);
 
+// it is also possible to set balance before commit
+
+commitHandler.setBalance(balance);
+commitHandler.execCommit();
+
+// if you want to reset the local balance and use the global you can reset
+
+commitHandler.resetBalance();
 ```
 
 ## Demo
