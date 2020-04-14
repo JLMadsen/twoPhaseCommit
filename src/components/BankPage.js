@@ -12,8 +12,8 @@ import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import Alert from "react-bootstrap/Alert";
 
-import {action, Vote} from "./action";
-import {CommitHandler} from "./commitHandler";
+import {action, Vote} from "./Action";
+import {CommitHandler} from "./CommitHandler";
 
 export class BankPage extends Component {
 

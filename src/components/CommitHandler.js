@@ -1,4 +1,4 @@
-import {action, Vote} from "./action";
+import {action, Vote} from "./Action";
 import {config} from "../config";
 
 export class CommitHandler {
@@ -18,7 +18,7 @@ export class CommitHandler {
 
     globalBalance;
     localBalance;
-    oldBalance;
+    oldBalance; // holds the value while voting.
     WriteAheadLog;
 
     isCoordinator;
