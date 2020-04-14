@@ -28,12 +28,15 @@ export class BankPage extends Component {
             log: "",
 
             // versions
-            localBalance: 0,
-            oldBalance: 0,
+            localBalance: 0, // data in input
+            globalBalance: 0, // data from last commit
+            oldBalance: 0, // holder data when evaluating commit
             writeAheadLog: [],
 
             // status
             isVoting: false,
+            isNew: true, // if a new client connects we cannot compare localdata and globaldata
+            isSender: false, // sender should not compare data
             votes: [],
 
             // role
@@ -43,6 +46,9 @@ export class BankPage extends Component {
             // visual state
             error: '',
             errorType: 'success',
+
+            // debug
+            lastVote: ""
         };
 
         console.log('connecting to socket');
@@ -98,11 +104,23 @@ export class BankPage extends Component {
 
                     let vote = "";
                     let ok = false;
+                    let desc = "";
 
-                    if(config.alwaysTrue) {
+                    if(config.alwaysTrue || this.state.isSender) {
                         ok = true;
                     } else {
-                        ok = Math.random() <= .8;
+
+                        let local = this.state.oldBalance;
+                        let global = this.state.globalBalance;
+
+                        console.log(local !== global);
+
+                        if(local !== global) {
+                            ok = false;
+                            desc = action.dataMismatch;
+                        } else {
+                            ok = true;
+                        }
                     }
 
                     if(ok){
@@ -116,6 +134,8 @@ export class BankPage extends Component {
                             this.state.clientId +','+
                             action.voteNo;
                     }
+
+                    if(desc) vote += "\n" + desc;
 
                     if(config.timedAnswer) {
                         // slow down system to see communication
@@ -163,6 +183,9 @@ export class BankPage extends Component {
                     let balance = WAL[WAL.length -1];
                     this.setState({
                             localBalance: balance,
+                            globalBalance: balance,
+                            isSender: false,
+                            isNew: false,
                         });
 
                     this.resetVoteState();
@@ -173,7 +196,8 @@ export class BankPage extends Component {
                     console.log('switch - rollback');
 
                     this.setState({
-                        localBalance: this.state.oldBalance
+                        localBalance: this.state.globalBalance,
+                        isSender: false,
                     });
 
                     this.resetVoteState();
@@ -196,7 +220,7 @@ export class BankPage extends Component {
     }
 
     handleCommit(){
-        this.setState({isVoting: true, votes: []});
+        this.setState({isVoting: true, votes: [], isSender: true});
         this.setError('', 'primary');
 
         let commit =
@@ -237,28 +261,39 @@ export class BankPage extends Component {
                                                         <Form.Control
                                                             readOnly={this.state.isVoting? true: false}
                                                             type="number"
-                                                            placeholder={this.state.localBalance}
+                                                            value={this.state.localBalance}
                                                             onChange={(event) => {this.setState({localBalance: event.target.value});}}
                                                         />
 
-                                                        <Button
-                                                            className="mt-2"
-                                                            variant="success"
-                                                            onClick={this.handleCommit}
-                                                            disabled={this.state.isVoting}
-                                                        >
-                                                            Commit
+                                                        <Row className="ml-2">
+                                                            <Button
+                                                                className="mt-2 mr-2"
+                                                                variant="danger"
+                                                                disabled={this.state.isVoting}
+                                                                onClick={this.resetBalance}>
+                                                                reset
+                                                            </Button>
 
-                                                            {this.state.isVoting?
-                                                                <Spinner
-                                                                    className="ml-2"
-                                                                    as="span"
-                                                                    animation="border"
-                                                                    size="sm"
-                                                                    role="status"
-                                                                    aria-hidden="true"/> : <div/>}
+                                                            <Button
+                                                                className="mt-2"
+                                                                variant="success"
+                                                                onClick={this.handleCommit}
+                                                                disabled={this.state.isVoting}
+                                                            >
+                                                                Commit
 
-                                                        </Button>
+                                                                {this.state.isVoting?
+                                                                    <Spinner
+                                                                        className="ml-2"
+                                                                        as="span"
+                                                                        animation="border"
+                                                                        size="sm"
+                                                                        role="status"
+                                                                        aria-hidden="true"/> : <div/>}
+
+                                                            </Button>
+                                                        </Row>
+
 
                                                     </div>
                                                 </Form>
@@ -353,5 +388,9 @@ export class BankPage extends Component {
         this.setState({error: message, errorType: variant});
         if(!message) {return;}
         setTimeout(() => {this.setState({error: '', errorType: 'primary'}); this.setState({votes: []});}, 5000);
+    }
+
+    resetBalance() {
+        this.setState({localBalance: this.state.globalBalance});
     }
 }
