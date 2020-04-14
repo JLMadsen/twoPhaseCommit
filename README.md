@@ -83,18 +83,22 @@ commitHandler.clientCount = (nClients) => {
 
 commitHandler.phaseChange = (phase) => {
   // phase is an action object which is defined in components folder
+  // if we have a bool isVoting we can change this here.
   
   switch (phase) {
     case action.commit:
     
+      isVoting = true;
       // do stuff ...
       
     case action.success:
     
+      isVoting = false;
       // do stuff ...
       
     case action.abort:
     
+      isVoting = false;
       // do stuff ...
 };
 
