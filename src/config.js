@@ -1,13 +1,16 @@
 export let config = {
 
-    // force all client to vote yes
+    // forces client to vote yes
     alwaysTrue: true,
 
-    // wait some time to send vote
+    // sets timeout on vote response
     // only used for demo, otherwise everything happens instantly
     timedAnswer: true,
 
     // for p2p encryption
     key: "",
+
+    // require that the client implements the newBalance method
+    requireNewBalance: true,
 
 };

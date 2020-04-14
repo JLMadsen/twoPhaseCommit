@@ -40,7 +40,6 @@ export class BankPage extends Component {
             clientId: 0,
             isCoordinator: false,
 
-
             // visual state
             error: '',
             errorType: 'success',
@@ -48,6 +47,10 @@ export class BankPage extends Component {
 
         console.log('connecting to socket');
         ws = new WebSocket("ws://localhost:4001");
+
+        var commitHandler = new Commithandler();
+
+
 
         ws.onmessage = (event) => {
             let content = event.data.split(',');
