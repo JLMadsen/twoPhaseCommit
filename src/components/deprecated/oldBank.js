@@ -12,8 +12,8 @@ import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import Alert from "react-bootstrap/Alert";
 
-import {config} from "../config";
-import {action, Vote} from "./action";
+import {config} from "../../config";
+import {action, Vote} from "./../Action";
 
 let ws;
 let cardBorder = "warning";
@@ -53,10 +53,6 @@ export class OldBank extends Component {
 
         console.log('connecting to socket');
         ws = new WebSocket("ws://localhost:4001");
-
-        var commitHandler = new Commithandler();
-
-
 
         ws.onmessage = (event) => {
             let content = event.data.split(',');
