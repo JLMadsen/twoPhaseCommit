@@ -63,9 +63,15 @@ This project contains a webpage and a class for the actual two phase commit prot
 
 ## Future work
 
-- More testing
+- Testing
+  - Test connection
+  - Test commit
+  - Test vote yes/no
+  - Test success/abort
+  - Test store/rollback
 - P2P encryption?
 - Less name ambiguity
+- more configurability
 
 ## Code example
 
