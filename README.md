@@ -69,7 +69,7 @@ This project contains a webpage and a class for the actual two phase commit prot
 
 ## Code example
 
-```
+```js
 let commitHandler = new CommitHandler();
 
 commitHandler.onLog = (log) => {
