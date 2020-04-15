@@ -17,7 +17,7 @@ Depeding on the vote the coordinator will send out a success or abort message, i
 
 After both of these phases the participants will answer with an akcnowledgement message to indicate they are ready for a new commit.
 
-![Communication diagram](https://i.imgur.com/CaciI3z.png)
+![Communication diagram](https://i.imgur.com/0UsgsfH.png)
 
 ## Implementation
 
@@ -47,9 +47,19 @@ In some cases i changed the concept and therefore i want to highlight the choice
 
 ## Techstack
 
+This project contains a webpage and a class for the actual two phase commit protocol
+
+### Two phase commit protocol
+
 - Javascript
 - Websocket
+- Node
+
+### Webpage
+
 - React
+- React Simplified
+- Bootstrap
 
 ## Future work
 
