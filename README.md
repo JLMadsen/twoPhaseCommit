@@ -47,9 +47,19 @@ In some cases i changed the concept and therefore i want to highlight the choice
 
 ## Techstack
 
+This project contains a webpage and a class for the actual two phase commit protocol
+
+### Two phase commit protocol
+
 - Javascript
 - Websocket
+- Node
+
+### Webpage
+
 - React
+- React Simplified
+- Bootstrap
 
 ## Future work
 
