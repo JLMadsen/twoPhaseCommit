@@ -139,6 +139,8 @@ export class CommitHandler {
 
     handleCommit(data) {
 
+        if(this.onPhaseChange) this.onPhaseChange(action.commit, parseInt(data[2]));
+
         if(this.isCoordinator) {
 
             let request =
@@ -165,9 +167,6 @@ export class CommitHandler {
         this.oldBalance = this.localBalance;
         this.localBalance = commitBalance;
 
-        if(this.onPhaseChange) this.onPhaseChange(action.commit);
-        if(this.onNewBalance) this.onNewBalance(this.localBalance);
-
         let ok = true;
         let desc;
 
@@ -185,8 +184,8 @@ export class CommitHandler {
             }
 
             // this checks if the newBalance method has been implemented
-            if(config.requireNewBalance) {
-                if (!this.onNewBalance) {
+            if(config.requireWrite) {
+                if (!this.onPhaseChange) {
                     ok = false;
                     desc = action.writeError;
                 }
@@ -255,8 +254,7 @@ export class CommitHandler {
         this.localBalance = this.WriteAheadLog[this.WriteAheadLog.length -1];
         this.globalBalance = this.localBalance;
 
-        if(this.onNewBalance) this.onNewBalance(this.localBalance);
-        if(this.onPhaseChange) this.onPhaseChange(action.success);
+        if(this.onPhaseChange) this.onPhaseChange(action.success, this.localBalance);
         if(this.onError) this.onError("Commit successful!", "success");
 
         this.votes = [];
@@ -267,8 +265,7 @@ export class CommitHandler {
         this.isFresh = false;
         this.localBalance = this.oldBalance;
 
-        if(this.onNewBalance) this.onNewBalance(this.oldBalance);
-        if(this.onPhaseChange) this.onPhaseChange(action.abort);
+        if(this.onPhaseChange) this.onPhaseChange(action.abort, this.oldBalance);
         if(this.onError) this.onError("Commit failed.", "danger");
 
         this.votes = [];

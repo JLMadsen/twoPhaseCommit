@@ -14,7 +14,7 @@ export let config = {
     // for p2p encryption
     key: "",
 
-    // require that the client implements the newBalance method
-    requireNewBalance: true,
+    // require that the client implements the phaseChange method
+    requireWrite: true,
 
 };

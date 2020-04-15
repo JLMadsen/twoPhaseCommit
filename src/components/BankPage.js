@@ -14,6 +14,8 @@ import Alert from "react-bootstrap/Alert";
 
 import {action, Vote} from "./Action";
 import {CommitHandler} from "./CommitHandler";
+import ListGroup from "react-bootstrap/ListGroup";
+import {ListGroupItem} from "react-bootstrap";
 
 export class BankPage extends Component {
 
@@ -29,8 +31,11 @@ export class BankPage extends Component {
             // visual state
             error: '',
             errorType: 'success',
+            transactions: [],
 
             localBalance: 0,
+            oldBalance: 0,
+
             amountOfClients: 0,
             isVoting: false,
             isCoordinator: false,
@@ -61,18 +66,54 @@ export class BankPage extends Component {
             });
         };
 
-        this.commitHandler.onPhaseChange = (phase) => {
+        this.commitHandler.onPhaseChange = (phase, balance) => {
 
             switch (phase) {
                 case action.commit:
-                    this.setState({isVoting: true});
+
+                    let oldBalance = 0;
+                    if(this.state.transactions) {
+                        oldBalance = this.state.localBalance;
+                    }
+
+                    this.setState({
+                        isVoting: true,
+                        oldBalance: oldBalance,
+                        localBalance: balance
+                    });
                     break;
+
                 case action.success:
-                    this.setState({isVoting: false});
+
+                    // update transaction log
+                    let trans = this.state.transactions;
+                    let newTrans = new Transaction();
+                    newTrans.id = trans.length + 1;
+
+                    let today = new Date();
+                    let time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+                    newTrans.time = time;
+
+                    newTrans.change = balance - this.state.oldBalance;
+                    console.log("CHA CHA CHA " + newTrans.change + " " + balance + " " + this.state.oldBalance + " " + this.localBalance);
+                    newTrans.total = balance;
+                    trans.push(newTrans);
+
+                    this.setState({
+                        isVoting: false,
+                        localBalance: balance,
+                        transactions: trans
+                    });
                     break;
+
                 case action.abort:
-                    this.setState({isVoting: false});
+
+                    this.setState({
+                        isVoting: false,
+                        localBalance: balance,
+                    });
                     break;
+
                 default:
                     break;
             }
@@ -82,7 +123,7 @@ export class BankPage extends Component {
             this.setState({votes: votes});
         };
 
-        // start commitHandler after implementing methods
+        // start commitHandler connection after implementing methods
         this.commitHandler.connect();
 
     }
@@ -152,7 +193,11 @@ export class BankPage extends Component {
                             </div>
                         </Card>
                         <Row className="ml-0">
-                            <a target="_blank" href="https://github.com/JLMadsen/twoPhaseCommit">
+                            <a
+                                target="_blank"
+                                href="https://github.com/JLMadsen/twoPhaseCommit"
+                                rel="noopener noreferrer"
+                            >
                                 <Badge variant="secondary" className="mr-2">Github</Badge>
                             </a>
                             <a>
@@ -174,6 +219,39 @@ export class BankPage extends Component {
                                 </OverlayTrigger>
                             </a>
                         </Row>
+                        <Card border="warning" className="p-2 mt-1">
+                            <div className="ml-2 text-center"><h1>Transaction log</h1></div>
+
+                            <ListGroup>
+
+                                <ListGroupItem>
+                                    <Row>
+                                        <Col>Id</Col>
+                                        <Col>Time</Col>
+                                        <Col>Total</Col>
+                                        <Col>Change</Col>
+                                    </Row>
+                                </ListGroupItem>
+
+                                {this.state.transactions.map(tr => {
+                                    return (
+                                        <ListGroupItem
+                                            variant={(tr.change<0)? "danger" : "success"}
+                                            key={tr.id}
+                                        >
+                                            <Row>
+                                                <Col>{tr.id}</Col>
+                                                <Col>{tr.time}</Col>
+                                                <Col>{tr.total}</Col>
+                                                <Col>{tr.change}</Col>
+                                            </Row>
+                                        </ListGroupItem>
+                                    )
+                                })}
+
+                            </ListGroup>
+
+                        </Card>
                     </Col>
                     <Col className="col-lg-4">
                         <Card border="warning" className="p-2">
@@ -195,6 +273,7 @@ export class BankPage extends Component {
                             { this.mapVotes().map(vote =>
                             {return(
                                         <Badge
+                                            key={vote.id}
                                             className="m-1"
                                             pill
                                             variant={vote.temp? "secondary" : vote.yes? "success" : "danger"}>
@@ -232,4 +311,11 @@ export class BankPage extends Component {
             this.setState({votes: []});
             }, 5000);
     }
+}
+
+class Transaction {
+    id;
+    total;
+    change;
+    time;
 }
