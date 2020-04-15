@@ -151,22 +151,29 @@ export class BankPage extends Component {
                                 </Container>
                             </div>
                         </Card>
-                        <OverlayTrigger
-                            placement="right"
-                            overlay={
-                                <Tooltip>
-                                    {
-                                        'isVoting '+      this.state.isVoting + '\n,'+
-                                        'votes '+         this.state.votes.map(e => e.yes) + '\n,'+
-                                        'nClients '+      this.state.amountOfClients + '\n,'+
-                                        'balance '+       this.state.localBalance  + '\n,'+
-                                        'isCoordinator '+ this.state.isCoordinator
+                        <Row className="ml-0">
+                            <a target="_blank" href="https://github.com/JLMadsen/twoPhaseCommit">
+                                <Badge variant="secondary" className="mr-2">Github</Badge>
+                            </a>
+                            <a>
+                                <OverlayTrigger
+                                    placement="right"
+                                    overlay={
+                                        <Tooltip>
+                                            {
+                                                'isVoting '+      this.state.isVoting + '\n,'+
+                                                'votes '+         this.state.votes.map(e => e.yes) + '\n,'+
+                                                'nClients '+      this.state.amountOfClients + '\n,'+
+                                                'balance '+       this.state.localBalance  + '\n,'+
+                                                'isCoordinator '+ this.state.isCoordinator
+                                            }
+                                        </Tooltip>
                                     }
-                                </Tooltip>
-                            }
-                        >
-                            <Badge variant="secondary">State</Badge>
-                        </OverlayTrigger>
+                                >
+                                    <Badge variant="secondary">State</Badge>
+                                </OverlayTrigger>
+                            </a>
+                        </Row>
                     </Col>
                     <Col className="col-lg-4">
                         <Card border="warning" className="p-2">

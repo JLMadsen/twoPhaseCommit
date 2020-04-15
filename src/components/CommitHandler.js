@@ -176,6 +176,7 @@ export class CommitHandler {
             // this can be disabled in config
             if(!config.overwrite) {
                 if(!this.isFresh) {
+                    console.log(this.oldBalance !== this.globalBalance);
                     if(this.oldBalance !== this.globalBalance) {
                         ok = false;
                         desc = action.dataMismatch;

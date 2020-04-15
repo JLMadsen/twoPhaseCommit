@@ -4,9 +4,9 @@ import {CommitHandler} from "../CommitHandler";
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 
-describe("Test CommitHandler", async () => {
+describe("Test CommitHandler", () => {
 
-    await exec("node ../../../server/socketServer.js");
+    exec("node ../../../server/socketServer");
 
     let commitHandler = new CommitHandler();
 
