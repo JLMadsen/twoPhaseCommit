@@ -234,7 +234,7 @@ export class BankPage extends Component {
                             <ListGroup variant="flush">
 
                                 <ListGroupItem>
-                                    <Row>
+                                    <Row className="text-center">
                                         <Col>#</Col>
                                         <Col>Time</Col>
                                         <Col>Total</Col>
@@ -249,7 +249,7 @@ export class BankPage extends Component {
                                             /*variant={(tr.change<0)? "danger" : "success"}*/
                                             key={tr.id}
                                         >
-                                            <Row>
+                                            <Row className="text-center">
                                                 <Col>{tr.id}</Col>
                                                 <Col>{tr.time}</Col>
                                                 <Col>{tr.total}</Col>
