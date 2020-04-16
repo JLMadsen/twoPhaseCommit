@@ -89,20 +89,22 @@ commitHandler.onError = (message, color) => {
   // color is based on bootstrap colors such as "success" and "danger"
 };
 
-commitHandler.newBalance = (balance) => {
-
-  // handle balance change
-};
-
 commitHandler.clientCount = (nClients) => {
 
   // notify when client connects or disconnects
   // nClients is number of conncted clients
 };
 
-commitHandler.phaseChange = (phase) => {
+commitHandler.onVote = (votes) => {
+  
+  // votes is a list
+  // example vote
+  // vote = {yes: true, id: 1}
+};
+
+commitHandler.phaseChange = (phase, balance) => {
   // phase is an action object which is defined in components folder
-  // if we have a bool isVoting we can change this here.
+  // if we have a bool isVoting and a account we can change this here.
   
   switch (phase) {
     case action.commit:
@@ -111,8 +113,9 @@ commitHandler.phaseChange = (phase) => {
       // do stuff ...
       
     case action.success:
-    
+   
       isVoting = false;
+      account.balance = balance
       // do stuff ...
       
     case action.abort:
