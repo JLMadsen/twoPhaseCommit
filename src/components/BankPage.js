@@ -11,10 +11,12 @@ import Badge from "react-bootstrap/Badge";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import Alert from "react-bootstrap/Alert";
-
-import {CommitHandler, Action, Vote} from "./CommitHandler";
 import ListGroup from "react-bootstrap/ListGroup";
 import {ListGroupItem} from "react-bootstrap";
+
+
+import {CommitHandler, Action, Vote} from "./CommitHandler";
+
 
 export class BankPage extends Component {
 

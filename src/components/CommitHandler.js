@@ -30,11 +30,12 @@ export class CommitHandler {
     votes;
     amountOfClients;
 
+    config;
+
     /**
      * Initialize all variables.
-     * TODO add config param.
      */
-    constructor() {
+    constructor(userConfig) {
         this.log = "";
         this.clientId = 0;
 
@@ -49,6 +50,41 @@ export class CommitHandler {
         this.isFresh = true;
         this.votes = [];
         this.amountOfClients = 0;
+
+        // config contains variables set by user before usage.
+        // these variables are default but can be changed by user in constructor
+        this.config = {
+
+            // forces client to vote yes
+            alwaysVoteYes: false,
+
+            // sets timeout on vote response
+            // only used for demo, otherwise everything happens instantly
+            timedAnswer: true,
+
+            // overwrite local changes
+            // if false it will vote no if there are changes.
+            overwrite: false,
+
+            // for p2p encryption
+            // Not yet implemented
+            key: "",
+
+            // require that the client implements the phaseChange method
+            requireWrite: true,
+
+            // socket host
+            host: "ws://localhost:4001"
+        };
+
+        if(userConfig) {
+            let key;
+            for (key in this.config) {
+                if (userConfig.hasOwnProperty(key)) {
+                    this.config[key] = userConfig[key];
+                }
+            }
+        }
     }
 
     /**
@@ -59,9 +95,8 @@ export class CommitHandler {
      * @return void
      */
     connect() {
-        console.log('connecting to socket');
 
-        this.websocket = new WebSocket("ws://localhost:4001");
+        this.websocket = new WebSocket(this.config.host);
 
         this.websocket.onopen = () => {
             this._appendLog("Connected to socket");
@@ -203,12 +238,11 @@ export class CommitHandler {
         let ok = true;
         let desc;
 
-        if(!Config.alwaysTrue && !this.isSender) {
+        if(!this.config.alwaysVoteYes && !this.isSender) {
             // if client has local changes
             // this can be disabled in config
-            if(!Config.overwrite) {
+            if(!this.config.overwrite) {
                 if(!this.isFresh) {
-                    console.log(this.oldBalance !== this.globalBalance);
                     if(this.oldBalance !== this.globalBalance) {
                         ok = false;
                         desc = Action.dataMismatch;
@@ -217,7 +251,7 @@ export class CommitHandler {
             }
 
             // this checks if the onPhaseChange method has been implemented
-            if(Config.requireWrite) {
+            if(this.config.requireWrite) {
                 if (!this.onPhaseChange) {
                     ok = false;
                     desc = Action.writeError;
@@ -229,17 +263,13 @@ export class CommitHandler {
             Action.vote +','+
             this.clientId +',';
 
-        if(ok){
-            vote += Action.voteYes;
-        } else {
-            vote += Action.voteNo;
-        }
+        vote += ok? Action.voteYes : Action.voteNo;
 
         // if voted no we have error message
         if(desc) vote += ","+ desc;
 
         // slow down system to see communication
-        if(Config.timedAnswer) {
+        if(this.config.timedAnswer) {
 
             let timeout = Math.random() * (7000 - 2500) + 2500;
             setTimeout(() => {this.websocket.send(vote);}, timeout);
@@ -264,7 +294,6 @@ export class CommitHandler {
         this.votes.push(res);
         if(this.onVote) this.onVote(this.votes);
 
-        console.log("isCoordinator: "+ this.isCoordinator);
         if(this.isCoordinator) {
             if(this.votes.length === this.amountOfClients) {
 
@@ -275,8 +304,6 @@ export class CommitHandler {
                         successes++;
                     }
                 }
-
-                console.log(successes);
 
                 if(successes === this.amountOfClients) {
                     this.websocket.send(Action.success +','+ this.clientId);
@@ -377,29 +404,3 @@ export class Vote{
     id;
     voted = false;
 }
-
-/**
- * Config JSON for altering the behaviour of CommitHandler
- * @type {{requireWrite: boolean, alwaysTrue: boolean, timedAnswer: boolean, overwrite: boolean, key: string}}
- */
-let Config = {
-
-    // forces client to vote yes
-    alwaysTrue: false,
-
-    // sets timeout on vote response
-    // only used for demo, otherwise everything happens instantly
-    timedAnswer: true,
-
-    // overwrite local changes
-    // if false it will vote no if there are changes.
-    overwrite: false,
-
-    // for p2p encryption
-    // Not yet implemented
-    key: "",
-
-    // require that the client implements the phaseChange method
-    requireWrite: true,
-
-};

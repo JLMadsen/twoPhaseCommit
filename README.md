@@ -77,9 +77,19 @@ In some cases i changed the concept and therefore i want to highlight the choice
 
 ## Code example
 
+Using default configuration
 ```js
 let commitHandler = new CommitHandler();
+```
+Using custom configuration, see section below for further information about config.
+```js
+let commitHandler = new CommitHandler({
+    host: "ws://mySocketServer.com:3000",
+});
+```
 
+To handle changes coming there are several methods that you can implement.
+```js
 commitHandler.onLog = (log) => {
 
   // log contains whole network log
@@ -126,21 +136,30 @@ commitHandler.onPhaseChange = (phase, balance) => {
       isVoting = false;
       // do stuff ...
 };
-
-// connects to socket
-// you should implement the above methods before connection
-
+```
+You should implement the above methods before connecting.
+```js
 commitHandler.connect();
-
-// to send commit
-
+```
+To commit balance:
+```js
 commitHandler.setBalance(balance);
 commitHandler.execCommit();
-
-// if you want to reset the local balance and use the global you can reset using resetBalance()
-
+```
+If the config value "overwrite" is false and there have been made locale changes the client will vote no when there in an incoming commit. To reset the back to the global balance use this method.
+```js
 commitHandler.resetBalance();
 ```
+
+## Config
+
+| Name         	| Default               	| Description                                                             	|   	|
+|--------------	|-----------------------	|-------------------------------------------------------------------------	|---	|
+| overwrite    	| false                 	| Client will vote no if there are local changes.                         	|   	|
+| alwaysVoteYes   	| false                 	| Forces client to vote yes on all commits. Also overwrites local changes 	|   	|
+| timedAnswer  	| true                  	| Sets timeout on sending vote.                                           	|   	|
+| requireWrite 	| true                  	| Client will vote no if onPhaseChange method has not been implemented.   	|   	|
+| host         	| "ws://localhost:4001" 	| Host for socket connection.                                             	|   	|
 
 ## Demo
 
@@ -157,11 +176,3 @@ In root dir:
 ### Server
 In server dir:
 `node socketServer`
-
-## Further reading
-
-https://iajit.org/PDF/vol.3,no.1/4-Toufik.pdf
-
-https://github.com/facebook/rocksdb/wiki/Two-Phase-Commit-Implementation
-
-https://dzone.com/articles/distributed-transactions-with-two-phase-commit-pro
