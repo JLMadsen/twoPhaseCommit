@@ -2,6 +2,10 @@
 
 [![Build Status](https://travis-ci.com/JLMadsen/twoPhaseCommit.svg?token=wJdgix4kVLGxzJzesfZK&branch=master)](https://travis-ci.com/JLMadsen/twoPhaseCommit)
 
+This project contains a react page and a class for the actual two phase commit protocol.
+
+The webpage serves as an example of how to use the class.
+
 ## Introduction
 
 Two Phase Commit protocol is a version control based around voting. In a group of clients which have shared data and want to change it, we can commit a change. But in this case all the clients vote on each commit, if all agree on the change it will be commited, if not it will be aborted. 
@@ -46,8 +50,6 @@ In some cases i changed the concept and therefore i want to highlight the choice
 - Instead direct client to client communication i use socket server which relays all messages to all other clients. In the original concept individual clients could communicate with each other, but because i chose to send it to all. I believe since this is already as system based upon voting, everyone should have access to the vote results.
 
 ## Techstack
-
-This project contains a webpage and a class for the actual two phase commit protocol
 
 ### Two phase commit protocol
 
