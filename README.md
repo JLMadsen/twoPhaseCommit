@@ -89,10 +89,11 @@ commitHandler.onError = (message, color) => {
   // color is based on bootstrap colors such as "success" and "danger"
 };
 
-commitHandler.clientCount = (nClients) => {
+commitHandler.onSetup = (nClients, isCoordinator) => {
 
-  // notify when client connects or disconnects
-  // nClients is number of conncted clients
+  // method for getting general data
+  // nClients is the amount of connected clients
+  // isCoordinator is a bool
 };
 
 commitHandler.onVote = (votes) => {
@@ -102,7 +103,7 @@ commitHandler.onVote = (votes) => {
   // vote = {yes: true, id: 1}
 };
 
-commitHandler.phaseChange = (phase, balance) => {
+commitHandler.onPhaseChange = (phase, balance) => {
   // phase is an action object which is defined in components folder
   // if we have a bool isVoting and a account we can change this here.
   
@@ -134,7 +135,7 @@ commitHandler.connect();
 commitHandler.setBalance(balance);
 commitHandler.execCommit();
 
-// if you want to reset the local balance and use the global you can reset
+// if you want to reset the local balance and use the global you can reset using resetBalance()
 
 commitHandler.resetBalance();
 ```
