@@ -1,7 +1,5 @@
 # Two Phase Commit - 2PC
 
-[![Build Status](https://travis-ci.com/JLMadsen/twoPhaseCommit.svg?token=wJdgix4kVLGxzJzesfZK&branch=master)](https://travis-ci.com/JLMadsen/twoPhaseCommit)
-
 This project contains a react page and a class for the actual two phase commit protocol.
 
 The webpage serves as an example of how to use the class.
