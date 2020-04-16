@@ -37,7 +37,10 @@
     ]
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.9.5",
+    "babel-jest": "^25.3.0",
     "history": "^4.10.1",
+    "jest": "^25.3.0",
     "react-router-dom": "^5.1.2"
   },
   "proxy": "http://localhost:8080"

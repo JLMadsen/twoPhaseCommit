@@ -60,12 +60,6 @@ export class BankPage extends Component {
             });
         };
 
-        this.commitHandler.onNewBalance = (balance) => {
-            this.setState({
-                localBalance: balance,
-            });
-        };
-
         this.commitHandler.onPhaseChange = (phase, balance) => {
 
             switch (phase) {

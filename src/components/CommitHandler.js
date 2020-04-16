@@ -8,7 +8,6 @@ export class CommitHandler {
     onLog;
     onError;
     onSetup;
-    onNewBalance;
     onPhaseChange;
     onVote;
 
@@ -98,7 +97,6 @@ export class CommitHandler {
 
     resetBalance() {
         this.localBalance = this.globalBalance;
-        if(this.onNewBalance) this.onNewBalance(this.localBalance)
     }
 
     setBalance(balance){
@@ -183,7 +181,7 @@ export class CommitHandler {
                 }
             }
 
-            // this checks if the newBalance method has been implemented
+            // this checks if the onPhaseChange method has been implemented
             if(config.requireWrite) {
                 if (!this.onPhaseChange) {
                     ok = false;
