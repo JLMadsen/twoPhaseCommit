@@ -13,6 +13,7 @@ import Tooltip from "react-bootstrap/Tooltip";
 import Alert from "react-bootstrap/Alert";
 import ListGroup from "react-bootstrap/ListGroup";
 import {ListGroupItem} from "react-bootstrap";
+import { MdCached, MdArrowDownward, MdArrowUpward, MdTrendingUp, MdTrendingFlat } from "react-icons/md";
 
 
 import {CommitHandler, Action, Vote} from "./CommitHandler";
@@ -154,24 +155,36 @@ export class BankPage extends Component {
                                                             }}
                                                         />
 
-                                                        <Button
-                                                            className="mt-2"
-                                                            variant="success"
-                                                            onClick={this.handleCommit}
-                                                            disabled={!!this.state.isVoting}
-                                                        >
-                                                            Commit
+                                                        <Container className="mt-2">
+                                                            <Button
+                                                                variant="danger"
+                                                                disabled={!!this.state.isVoting}
+                                                                onClick={() => {
+                                                                    this.commitHandler.resetBalance();
+                                                                    this.setState({localBalance: this.commitHandler.localBalance});
+                                                                }}
+                                                            >
+                                                                <MdCached/>
+                                                            </Button>
+                                                            <Button
+                                                                className="ml-2"
+                                                                variant="success"
+                                                                onClick={this.handleCommit}
+                                                                disabled={!!this.state.isVoting}
+                                                            >
+                                                                Commit
 
-                                                            {this.state.isVoting?
-                                                                <Spinner
-                                                                    className="ml-2"
-                                                                    as="span"
-                                                                    animation="border"
-                                                                    size="sm"
-                                                                    role="status"
-                                                                    aria-hidden="true"/> : <div/>}
+                                                                {this.state.isVoting?
+                                                                    <Spinner
+                                                                        className="ml-2"
+                                                                        as="span"
+                                                                        animation="border"
+                                                                        size="sm"
+                                                                        role="status"
+                                                                        aria-hidden="true"/> : <div/>}
 
-                                                        </Button>
+                                                            </Button>
+                                                        </Container>
 
                                                     </div>
                                                 </Form>
@@ -226,13 +239,14 @@ export class BankPage extends Component {
                                         <Col>Time</Col>
                                         <Col>Total</Col>
                                         <Col>Change</Col>
+                                        <Col><MdTrendingUp/></Col>
                                     </Row>
                                 </ListGroupItem>
 
                                 {this.state.transactions.map(tr => {
                                     return (
                                         <ListGroupItem
-                                            variant={(tr.change<0)? "danger" : "success"}
+                                            /*variant={(tr.change<0)? "danger" : "success"}*/
                                             key={tr.id}
                                         >
                                             <Row>
@@ -240,6 +254,7 @@ export class BankPage extends Component {
                                                 <Col>{tr.time}</Col>
                                                 <Col>{tr.total}</Col>
                                                 <Col>{tr.change}</Col>
+                                                <Col>{(tr.change<0)? <MdArrowDownward/> : (tr.change===0)? <MdTrendingFlat/> : <MdArrowUpward/>}</Col>
                                             </Row>
                                         </ListGroupItem>
                                     )

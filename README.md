@@ -27,7 +27,7 @@ After both of these phases the participants will answer with an akcnowledgement 
 
 This implementation is based around a simple web bank. We have one account with a balance, we can change this balance and commit it.
 
-For the communication i use a socket server, this acts as an intermediate for designating a coordinator and keeping count of clients. It also sends an echo of all incoming messages to all clients.
+For the communication I use a socket server, this acts as an intermediate for designating a coordinator and keeping count of clients. It also sends an echo of all incoming messages to all clients.
 
 The first client that connects to the socket server will be assigned the coordinator role, the rest are participants.
 
@@ -45,9 +45,9 @@ The coordinator will count the votes and if any client voted no it will send an 
 
 ### Choices
 
-In some cases i changed the concept and therefore i want to highlight the choices i made.
+In some cases I changed the concept and therefore I want to highlight the choices I made.
 
-- Instead direct client to client communication i use socket server which relays all messages to all other clients. In the original concept individual clients could communicate with each other, but because i chose to send it to all. I believe since this is already as system based upon voting, everyone should have access to the vote results.
+- Instead direct client to client communication I use socket server which relays all messages to all other clients. In the original concept individual clients could communicate with each other, but because I chose to send it to all. I believe since this is already as system based upon voting, everyone should have access to the vote results.
 
 ## Techstack
 
@@ -163,7 +163,7 @@ commitHandler.resetBalance();
 
 ## Demo
 
-![Demo gif](https://i.imgur.com/xoE2JTM.gif)
+![Demo gif](https://i.imgur.com/Yt2bqYl.gif)
 
 ## Installasion and usage
 In root dir: 
