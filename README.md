@@ -118,10 +118,10 @@ commitHandler.onPhaseChange = (phase, balance) => {
     case action.success:
    
       isVoting = false;
-      account.balance = balance
+      account.balance = balance;
       // do stuff ...
       
-    case action.abort:
+    case action.rollback:
     
       isVoting = false;
       // do stuff ...
