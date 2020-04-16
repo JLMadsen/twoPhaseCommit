@@ -12,8 +12,7 @@ import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import Alert from "react-bootstrap/Alert";
 
-import {action, Vote} from "./Action";
-import {CommitHandler} from "./CommitHandler";
+import {CommitHandler, Action, Vote} from "./CommitHandler";
 import ListGroup from "react-bootstrap/ListGroup";
 import {ListGroupItem} from "react-bootstrap";
 
@@ -63,21 +62,16 @@ export class BankPage extends Component {
         this.commitHandler.onPhaseChange = (phase, balance) => {
 
             switch (phase) {
-                case action.commit:
-
-                    let oldBalance = 0;
-                    if(this.state.transactions) {
-                        oldBalance = this.state.localBalance;
-                    }
+                case Action.commit:
 
                     this.setState({
                         isVoting: true,
-                        oldBalance: oldBalance,
-                        localBalance: balance
+                        localBalance: balance,
+                        oldBalance: this.commitHandler.globalBalance
                     });
                     break;
 
-                case action.success:
+                case Action.success:
 
                     // update transaction log
                     let trans = this.state.transactions;
@@ -89,7 +83,6 @@ export class BankPage extends Component {
                     newTrans.time = time;
 
                     newTrans.change = balance - this.state.oldBalance;
-                    console.log("CHA CHA CHA " + newTrans.change + " " + balance + " " + this.state.oldBalance + " " + this.localBalance);
                     newTrans.total = balance;
                     trans.push(newTrans);
 
@@ -100,7 +93,7 @@ export class BankPage extends Component {
                     });
                     break;
 
-                case action.abort:
+                case Action.rollback:
 
                     this.setState({
                         isVoting: false,
@@ -189,6 +182,13 @@ export class BankPage extends Component {
                         <Row className="ml-0">
                             <a
                                 target="_blank"
+                                href={window.location.href}
+                                rel="noopener noreferrer"
+                            >
+                                <Badge variant="secondary" className="mr-2">New session</Badge>
+                            </a>
+                            <a
+                                target="_blank"
                                 href="https://github.com/JLMadsen/twoPhaseCommit"
                                 rel="noopener noreferrer"
                             >
@@ -216,11 +216,11 @@ export class BankPage extends Component {
                         <Card border="warning" className="p-2 mt-1">
                             <div className="ml-2 text-center"><h1>Transaction log</h1></div>
 
-                            <ListGroup>
+                            <ListGroup variant="flush">
 
                                 <ListGroupItem>
                                     <Row>
-                                        <Col>Id</Col>
+                                        <Col>#</Col>
                                         <Col>Time</Col>
                                         <Col>Total</Col>
                                         <Col>Change</Col>
@@ -270,7 +270,7 @@ export class BankPage extends Component {
                                             key={vote.id}
                                             className="m-1"
                                             pill
-                                            variant={vote.temp? "secondary" : vote.yes? "success" : "danger"}>
+                                            variant={vote.voted? "secondary" : vote.yes? "success" : "danger"}>
                                             client {vote.id}
                                         </Badge>
                             )})}
@@ -290,7 +290,7 @@ export class BankPage extends Component {
             if(!votes.some((e) => {return e.id === (i+1)})){
                 let tempVote = new Vote();
                 tempVote.id = i+1;
-                tempVote.temp = true;
+                tempVote.voted = true;
                 votes.push(tempVote)
             }
         }
@@ -313,3 +313,10 @@ class Transaction {
     change;
     time;
 }
+
+/*
+    "@babel/preset-env": "^7.9.5",
+    "babel-jest": "^25.3.0"
+    "jest": "^25.3.0",
+
+ */
