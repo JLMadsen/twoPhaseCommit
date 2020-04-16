@@ -163,7 +163,7 @@ commitHandler.resetBalance();
 
 ## Demo
 
-![Demo gif](https://i.imgur.com/xoE2JTM.gif)
+![Demo gif](https://i.imgur.com/Le1cVfy.gif)
 
 ## Installasion and usage
 In root dir: 
