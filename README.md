@@ -154,19 +154,19 @@ commitHandler.resetBalance();
 
 ## Config
 
-| Name         	| Default               	| Description                                                             	|   	|
-|--------------	|-----------------------	|-------------------------------------------------------------------------	|---	|
-| overwrite    	| false                 	| Client will vote no if there are local changes.                         	|   	|
-| alwaysVoteYes   	| false                 	| Forces client to vote yes on all commits. Also overwrites local changes 	|   	|
-| timedAnswer  	| true                  	| Sets timeout on sending vote.                                           	|   	|
-| requireWrite 	| true                  	| Client will vote no if onPhaseChange method has not been implemented.   	|   	|
-| host         	| "ws://localhost:4001" 	| Host for socket connection.                                             	|   	|
+| Name         	| Default               	| Description                                                             	|
+|--------------	|-----------------------	|-------------------------------------------------------------------------	|
+| overwrite    	| false                 	| Client will vote no if there are local changes.                         	|
+| alwaysVoteYes   	| false                 	| Forces client to vote yes on all commits. Also overwrites local changes 	|
+| timedAnswer  	| true                  	| Sets timeout on sending vote.                                           	|
+| requireWrite 	| true                  	| Client will vote no if onPhaseChange method has not been implemented.   	|
+| host         	| "ws://localhost:4001" 	| Host for socket connection.                                             	|
 
 ## Demo
 
 ![Demo gif](https://i.imgur.com/Yt2bqYl.gif)
 
-## Installasion and usage
+## Installation
 In root dir: 
 `npm install`
 
