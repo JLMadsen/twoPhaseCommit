@@ -168,12 +168,18 @@ commitHandler.resetBalance();
 
 ## Installation
 In root dir: 
-`npm install`
+```sh
+npm install
+```
 
 ### Client
 In root dir: 
-`npm start`
+```sh
+npm start
+```
 
 ### Server
 In server dir:
-`node socketServer`
+```sh
+node socketServer
+```
