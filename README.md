@@ -70,8 +70,8 @@ In some cases I changed the concept and therefore I want to highlight the choice
   - Test success/abort
   - Test store/rollback
 - P2P encryption?
-- Less name ambiguity
 - more configurability
+- Extra security against pretending to be coordinator and sending false success.
 
 ## Code example
 
