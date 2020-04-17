@@ -49,6 +49,10 @@ export class BankPage extends Component {
 
         this.commitHandler.onLog = (log) => {
             this.setState({log: log})
+
+            // scroll to bottom of network log
+            let textarea = document.getElementById('textarea_id');
+            textarea.scrollTop = textarea.scrollHeight;
         };
 
         this.commitHandler.onError = (message, color) => {
@@ -271,6 +275,7 @@ export class BankPage extends Component {
                             <Form.Control
                                 readOnly
                                 as="textarea"
+                                id="textarea_id"
                                 rows="15"
                                 controlid="networklog"
                                 defaultValue={this.state.log}
