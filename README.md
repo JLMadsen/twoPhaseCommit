@@ -139,9 +139,12 @@ You should implement the above methods before connecting.
 ```js
 commitHandler.connect();
 ```
+Updating balance:
+```ja
+commitHandler.setBalance(balance);
+```
 To commit balance:
 ```js
-commitHandler.setBalance(balance);
 commitHandler.execCommit();
 ```
 If the config value "overwrite" is false and there have been made locale changes the client will vote no when there in an incoming commit. To reset the back to the global balance use this method.
@@ -151,19 +154,19 @@ commitHandler.resetBalance();
 
 ## Config
 
-| Name         	| Default               	| Description                                                             	|   	|
-|--------------	|-----------------------	|-------------------------------------------------------------------------	|---	|
-| overwrite    	| false                 	| Client will vote no if there are local changes.                         	|   	|
-| alwaysVoteYes   	| false                 	| Forces client to vote yes on all commits. Also overwrites local changes 	|   	|
-| timedAnswer  	| true                  	| Sets timeout on sending vote.                                           	|   	|
-| requireWrite 	| true                  	| Client will vote no if onPhaseChange method has not been implemented.   	|   	|
-| host         	| "ws://localhost:4001" 	| Host for socket connection.                                             	|   	|
+| Name         	| Default               	| Description                                                             	|
+|--------------	|-----------------------	|-------------------------------------------------------------------------	|
+| overwrite    	| false                 	| Client will vote no if there are local changes.                         	|
+| alwaysVoteYes   	| false                 	| Forces client to vote yes on all commits. Also overwrites local changes 	|
+| timedAnswer  	| true                  	| Sets timeout on sending vote.                                           	|
+| requireWrite 	| true                  	| Client will vote no if onPhaseChange method has not been implemented.   	|
+| host         	| "ws://localhost:4001" 	| Host for socket connection.                                             	|
 
 ## Demo
 
 ![Demo gif](https://i.imgur.com/Yt2bqYl.gif)
 
-## Installasion and usage
+## Installation
 In root dir: 
 `npm install`
 
