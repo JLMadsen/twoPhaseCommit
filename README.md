@@ -139,9 +139,12 @@ You should implement the above methods before connecting.
 ```js
 commitHandler.connect();
 ```
+Updating balance:
+```ja
+commitHandler.setBalance(balance);
+```
 To commit balance:
 ```js
-commitHandler.setBalance(balance);
 commitHandler.execCommit();
 ```
 If the config value "overwrite" is false and there have been made locale changes the client will vote no when there in an incoming commit. To reset the back to the global balance use this method.
