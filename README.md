@@ -164,7 +164,7 @@ commitHandler.resetBalance();
 
 ## Demo
 
-![Demo gif](https://i.imgur.com/Yt2bqYl.gif)
+![Demo gif](https://i.imgur.com/WQ0CmXM.gif)
 
 ## Installation
 In root dir: 
