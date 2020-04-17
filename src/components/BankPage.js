@@ -129,7 +129,7 @@ export class BankPage extends Component {
                 <Row className="justify-content-lg-center mt-4">
                     <Col className="col-lg-7">
                         <Card border="warning" className="p-2">
-                            <div className="ml-2 text-center"><h1>Two Phase Commit Protocol</h1></div>
+                            <div className="text-center"><h1>Two Phase Commit Protocol</h1></div>
 
                             {(this.state.error) ?
                                 <Alert style={{height: '3em'}} variant={this.state.errorType}>{this.state.error}</Alert> :
@@ -266,7 +266,7 @@ export class BankPage extends Component {
                     </Col>
                     <Col className="col-lg-4">
                         <Card border="warning" className="p-2">
-                            <div className="ml-2 text-center"><h1>Network log</h1></div>
+                            <div className="text-center"><h1>Network log</h1></div>
 
                             <Form.Control
                                 readOnly
