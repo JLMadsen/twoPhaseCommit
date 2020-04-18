@@ -48,7 +48,7 @@ export class BankPage extends Component {
         this.commitHandler = new CommitHandler();
 
         this.commitHandler.onLog = (log) => {
-            this.setState({log: log})
+            this.setState({log: log});
 
             // scroll to bottom of network log
             let textarea = document.getElementById('textarea_id');
@@ -74,7 +74,8 @@ export class BankPage extends Component {
                     this.setState({
                         isVoting: true,
                         localBalance: balance,
-                        oldBalance: this.commitHandler.globalBalance
+                        oldBalance: this.commitHandler.globalBalance,
+                        votes: []
                     });
                     break;
 
@@ -86,7 +87,11 @@ export class BankPage extends Component {
                     newTrans.id = trans.length + 1;
 
                     let today = new Date();
-                    let time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+                    let hours = (today.getHours()<10? '0':'') + today.getHours();
+                    let minutes = (today.getMinutes()<10? '0':'') + today.getMinutes();
+                    let seconds = (today.getSeconds()<10? '0':'') + today.getSeconds();
+                    let time = hours + ":" + minutes + ":" + seconds;
+
                     newTrans.time = time;
 
                     newTrans.change = balance - this.state.oldBalance;
@@ -96,8 +101,12 @@ export class BankPage extends Component {
                     this.setState({
                         isVoting: false,
                         localBalance: balance,
-                        transactions: trans
+                        transactions: trans,
                     });
+
+                    // let user see votes before removing them
+                    setTimeout(() => {this.setState({votes: []})}, 2500);
+
                     break;
 
                 case Action.rollback:
@@ -106,6 +115,10 @@ export class BankPage extends Component {
                         isVoting: false,
                         localBalance: balance,
                     });
+
+                    // let user see votes before removing them
+                    setTimeout(() => {this.setState({votes: []})}, 2500);
+
                     break;
 
                 default:
@@ -324,7 +337,6 @@ export class BankPage extends Component {
         if(!message) {return;}
         setTimeout(() => {
             this.setState({error: '', errorType: 'primary'});
-            this.setState({votes: []});
             }, 5000);
     }
 }

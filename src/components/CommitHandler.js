@@ -151,6 +151,10 @@ export class CommitHandler {
      * @param balance
      */
     setBalance(balance){
+        if(this.isVoting) {
+            if(this.onError) this.onError("Vote in progress", "warning");
+            return
+        }
 
         this.localBalance = balance;
     }
@@ -161,6 +165,7 @@ export class CommitHandler {
      */
     execCommit() {
         if(this.isVoting) {
+            if(this.onError) this.onError("Vote in progress", "warning");
             return
         }
 
@@ -271,7 +276,7 @@ export class CommitHandler {
         // slow down system to see communication
         if(this.config.timedAnswer) {
 
-            let timeout = Math.random() * (7000 - 2500) + 2500;
+            let timeout = Math.random() * (5000 - 2500) + 2500;
             setTimeout(() => {this.websocket.send(vote);}, timeout);
 
         } else {
