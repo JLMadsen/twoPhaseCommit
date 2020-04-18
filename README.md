@@ -70,8 +70,8 @@ In some cases I changed the concept and therefore I want to highlight the choice
   - Test success/abort
   - Test store/rollback
 - P2P encryption?
-- Less name ambiguity
 - more configurability
+- Extra security against pretending to be coordinator and sending false success.
 
 ## Code example
 
@@ -164,16 +164,22 @@ commitHandler.resetBalance();
 
 ## Demo
 
-![Demo gif](https://i.imgur.com/Yt2bqYl.gif)
+![Demo gif](https://i.imgur.com/WQ0CmXM.gif)
 
 ## Installation
 In root dir: 
-`npm install`
+```sh
+npm install
+```
 
 ### Client
 In root dir: 
-`npm start`
+```sh
+npm start
+```
 
 ### Server
 In server dir:
-`node socketServer`
+```sh
+node socketServer
+```
