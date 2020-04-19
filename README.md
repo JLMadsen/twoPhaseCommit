@@ -1,23 +1,23 @@
-# Two Phase Commit - 2PC
+# Two Phase Commit
 
-This project contains a react page and a class for the actual two phase commit protocol.
+This project contains a react project and a class for the actual [two phase commit protocol](src/components/CommitHandler.js).
 
 The webpage serves as an example of how to use the class.
 
 ## Introduction
 
-Two Phase Commit protocol is a version control based around voting. In a group of clients which have shared data and want to change it, we can commit a change. But in this case all the clients vote on each commit, if all agree on the change it will be commited, if not it will be aborted. 
+Two Phase Commit protocol is a version control based around voting. In a group of clients which have shared data and want to change it, we can commit a change. But in this case all the clients vote on each commit, if all agree on the change it will be committed, if not it will be aborted. 
 
 we can designate one node to be a coordinator, this client is in charge of requesting votes and counting them.
 
-The protocal has several phases, the first being an initial commit by either a participant or the coordinator.
+The protocol has several phases, the first being an initial commit by either a participant or the coordinator.
 During this phase the coordinator will request a vote on this commit from all participants.
 
 The next phase starts when all clients have voted. Then the coordinator will count them, if all clients voted yes it will succeed, if one or more clients vote no it will fail.
 
-Depeding on the vote the coordinator will send out a success or abort message, if it succeeded all clients will write the new commit data to local storage. If the vote failed the coordinator will send an abort message, when clients recieve this they will rollback the commit data.
+Depending on the vote the coordinator will send out a success or abort message, if it succeeded all clients will write the new commit data to local storage. If the vote failed the coordinator will send an abort message, when clients receive this they will rollback the commit data.
 
-After both of these phases the participants will answer with an akcnowledgement message to indicate they are ready for a new commit.
+After both of these phases the participants will answer with an acknowledgement message to indicate they are ready for a new commit.
 
 ![Communication diagram](https://i.imgur.com/0UsgsfH.png)
 
@@ -43,11 +43,17 @@ The coordinator will count the votes and if any client voted no it will send an 
 
 ### Choices
 
-In some cases I changed the concept and therefore I want to highlight the choices I made.
+In some cases I changed the concept and therefore I want to highlight the choices I made which may not be obvious.
 
 - Instead direct client to client communication I use socket server which relays all messages to all other clients. In the original concept individual clients could communicate with each other, but because I chose to send it to all. I believe since this is already as system based upon voting, everyone should have access to the vote results.
 
-## Techstack
+- Added additional check to see if onPhaseChange is implemented. Due to how the protocol writes data we need to check if the user has implemented the method. Another way i could have done this was to write the data to a file, but i chose not to.
+
+## Tech stack
+
+For this implementation i chose to write in javascript since it allowed me easy usage of websocket and React.
+
+In javascript all assignments are atomic meaning there is less chance of getting write errors when committing.
 
 ### Two phase commit protocol
 
@@ -108,9 +114,9 @@ commitHandler.onSetup = (nClients, isCoordinator) => {
 
 commitHandler.onVote = (votes) => {
   
-  // votes is a list
-  // example vote
-  // vote = {yes: true, id: 1}
+  // array of votes
+  // each vote contains result and client id
+  // let exampleVote = {yes: true, id: 1}
 };
 
 commitHandler.onPhaseChange = (phase, balance) => {
@@ -133,6 +139,7 @@ commitHandler.onPhaseChange = (phase, balance) => {
     
       isVoting = false;
       // do stuff ...
+  }
 };
 ```
 You should implement the above methods before connecting.
@@ -155,12 +162,16 @@ commitHandler.resetBalance();
 ## Config
 
 | Name         	| Default               	| Description                                                             	|
-|--------------	|-----------------------	|-------------------------------------------------------------------------	|
-| overwrite    	| false                 	| Client will vote no if there are local changes.                         	|
-| alwaysVoteYes   	| false                 	| Forces client to vote yes on all commits. Also overwrites local changes 	|
+|---------------|---------------------------|---------------------------------------------------------------------------|
+| overwrite    	| false                 	| Client will vote yes even if there are local changes.                     |
+| alwaysVoteYes | false                 	| Forces client to vote yes on all commits. Overwrites local changes 	    |
 | timedAnswer  	| true                  	| Sets timeout on sending vote.                                           	|
 | requireWrite 	| true                  	| Client will vote no if onPhaseChange method has not been implemented.   	|
 | host         	| "ws://localhost:4001" 	| Host for socket connection.                                             	|
+| timeout       | 8000                     	| Time before coordinator aborts vote.                                      |
+| key*         	|                        	| Key used for P2P encryption.                                            	| 
+
+(* Not yet implemented)
 
 ## Demo
 

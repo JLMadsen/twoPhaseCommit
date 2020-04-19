@@ -27,8 +27,12 @@ export class CommitHandler {
     isVoting;
     isSender; // sender does not need to compare local changes
     isFresh;  // fresh client does not need to compare local changes
+
     votes;
     amountOfClients;
+    acknowledgements;
+    startTime;
+    lastWrite;
 
     config;
 
@@ -50,6 +54,8 @@ export class CommitHandler {
         this.isFresh = true;
         this.votes = [];
         this.amountOfClients = 0;
+        this.acknowledgements = 0;
+        this.lastWrite = "";
 
         // config contains variables set by user before usage.
         // these variables are default but can be changed by user in constructor
@@ -74,7 +80,11 @@ export class CommitHandler {
             requireWrite: true,
 
             // socket host
-            host: "ws://localhost:4001"
+            host: "ws://localhost:4001",
+
+            // time before coordinator aborts vote
+            // in milliseconds
+            timeout: 8000,
         };
 
         if(userConfig) {
@@ -130,6 +140,9 @@ export class CommitHandler {
 
                 case Action.rollback:
                     return this._handleRollback(data);
+
+                case Action.acknowledge:
+                    return this._handleAcknowlegde(data);
 
                 default:
                     if(this.onError) this.onError("Unrecognized opcode", "warning");
@@ -222,6 +235,13 @@ export class CommitHandler {
                 data[2];
 
             this.websocket.send(request);
+
+            this.timedOut = false;
+            this.startTime = Date.now();
+
+            setTimeout(() => {
+                this._handleAcknowlegde();
+            }, this.config.timeout)
         }
     }
 
@@ -311,9 +331,16 @@ export class CommitHandler {
                 }
 
                 if(successes === this.amountOfClients) {
-                    this.websocket.send(Action.success +','+ this.clientId);
+
+                    let success = Action.success +','+ this.clientId;
+                    this.lastWrite = success;
+                    this.websocket.send(success);
+
                 } else {
-                    this.websocket.send(Action.rollback +','+ this.clientId);
+
+                    let rollback = Action.rollback +','+ this.clientId;
+                    this.lastWrite = rollback;
+                    this.websocket.send(rollback);
                 }
             }
         }
@@ -332,6 +359,12 @@ export class CommitHandler {
         if(this.onPhaseChange) this.onPhaseChange(Action.success, this.localBalance);
         if(this.onError) this.onError("Commit successful!", "success");
 
+        let ack =
+            Action.acknowledge +","+
+            this.clientId;
+
+        this.websocket.send(ack);
+
         this._resetStates();
     }
 
@@ -347,7 +380,34 @@ export class CommitHandler {
         if(this.onPhaseChange) this.onPhaseChange(Action.rollback, this.oldBalance);
         if(this.onError) this.onError("Commit failed.", "danger");
 
+        let ack =
+            Action.acknowledge +","+
+            this.clientId;
+
+        this.websocket.send(ack);
+
         this._resetStates();
+    }
+
+    /**
+     * All clients send acknowledge so we can check if all clients managed to write data.
+     * @param data
+     * @private
+     */
+    _handleAcknowlegde(data) {
+
+        if(this.isCoordinator) {
+            this.acknowledgements++;
+
+            if(this.acknowledgements === this.amountOfClients) {
+                this.acknowledgements = 0;
+                this.startTime = Date.now();
+
+            } else if((this.startTime + this.config.timeout) < Date.now()) {
+                //this.websocket.send(this.lastWrite);
+                this.onError("Commit timed out", "warning");
+            }
+        }
     }
 
     /**
