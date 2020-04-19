@@ -19,7 +19,7 @@ Depending on the vote the coordinator will send out a success or abort message, 
 
 After both of these phases the participants will answer with an acknowledgement message to indicate they are ready for a new commit.
 
-![Communication diagram](https://i.imgur.com/0UsgsfH.png)
+![Communication diagram](https://i.imgur.com/8SP0Ahf.png)
 
 ## Implementation
 
