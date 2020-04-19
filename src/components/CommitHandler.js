@@ -404,8 +404,7 @@ export class CommitHandler {
                 this.startTime = Date.now();
 
             } else if((this.startTime + this.config.timeout) < Date.now()) {
-                //this.websocket.send(this.lastWrite);
-                this.onError("Commit timed out", "warning");
+                this.onError("Missing acknowledgement.", "warning");
             }
         }
     }
