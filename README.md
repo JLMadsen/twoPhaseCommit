@@ -78,6 +78,7 @@ In javascript all assignments are atomic meaning there is less chance of getting
 - P2P encryption?
 - more configurability
 - Extra security against pretending to be coordinator and sending false success.
+- Synchronize new clients with global balance.
 
 ## Code example
 

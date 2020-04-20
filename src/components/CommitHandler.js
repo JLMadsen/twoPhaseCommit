@@ -164,6 +164,7 @@ export class CommitHandler {
      * Method for client to set the Balance.
      * Requires isVoting to be false.
      * @param balance
+     * @type number
      */
     setBalance(balance){
         if(this.isVoting) {
@@ -389,6 +390,7 @@ export class CommitHandler {
     /**
      * Checks if all votes have been received after specified time.
      * If missing votes we abort commit
+     * This is to avoid being stuck if a client does not respond
      * @private
      */
     _handleTimeout() {
@@ -478,7 +480,7 @@ export let Action = {
 };
 
 /**
- * Simple vote class.
+ * Vote class.
  * Contains whether client voted yes and their id.
  */
 export class Vote{

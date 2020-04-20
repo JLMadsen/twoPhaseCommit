@@ -16,6 +16,9 @@ ws_server.on('connection', (connection) => {
 
     updateNClients();
 
+    /**
+     * When we receive a new message we forward it to all clients
+     */
     connection.on('message', (message) => {
         console.log("message received from a client: " + message);
 
@@ -40,7 +43,12 @@ ws_server.on('connection', (connection) => {
     });
 });
 
+
 var BreakException = {};
+
+/**
+ * If the coordinator disconnects we need to assign a new one.
+ */
 const assignNewCoordinator = () => {
     let nClients = ws_server.clients.size;
     try {
@@ -56,6 +64,9 @@ const assignNewCoordinator = () => {
     }
 };
 
+/**
+ * Update client count and send to all clients
+ */
 const updateNClients = () => {
     let nClients = ws_server.clients.size;
     ws_server.clients.forEach((client) => {
