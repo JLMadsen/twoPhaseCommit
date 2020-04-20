@@ -80,20 +80,20 @@ In javascript all assignments are atomic meaning there is less chance of getting
 - Extra security against pretending to be coordinator and sending false success.
 - Synchronize new clients with global balance.
 
-## Code example
+## Api
 
 Using default configuration
 ```js
 let commitHandler = new CommitHandler();
 ```
-Using custom configuration, see section below for further information about config.
+Using custom configuration. See section below for further information about config and the default values.
 ```js
 let commitHandler = new CommitHandler({
     host: "ws://mySocketServer.com:3000",
 });
 ```
 
-To handle changes coming there are several methods that you can implement.
+To handle changes there are several methods that you can implement.
 ```js
 commitHandler.onLog = (log) => {
 
@@ -144,6 +144,7 @@ commitHandler.onPhaseChange = (phase, balance) => {
 };
 ```
 You should implement the above methods before connecting.
+Socket host can be changed in config.
 ```js
 commitHandler.connect();
 ```
