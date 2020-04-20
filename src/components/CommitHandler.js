@@ -8,36 +8,35 @@ export class CommitHandler {
     websocket;
 
     // overridable methods
-    onLog;
-    onError;
-    onSetup;
-    onPhaseChange;
-    onVote;
+    onLog;              // triggers when we receive a new message from socket
+    onError;            // triggers on error
+    onSetup;            // triggers when a new client connects or client gets designated a role
+    onPhaseChange;      // triggers when a commit in initiated and when we receive success or abort
+    onVote;             // triggers when a client votes
 
-    // log with all network packets
-    log;
-    clientId;
+    log;                // Contains entire network log as string
+    clientId;           // For identification in outgoing packets
 
-    globalBalance;
-    localBalance;
-    oldBalance; // holds the value while voting.
-    WriteAheadLog;
+    globalBalance;      // The shared balance between all clients
+    localBalance;       // local balance which is edited
+    oldBalance;         // holds the value while voting.
+    WriteAheadLog;      // Incoming commit values
 
-    isCoordinator;
-    isVoting;
-    isSender; // sender does not need to compare local changes
-    isFresh;  // fresh client does not need to compare local changes
+    isCoordinator;      // If client is coordinator
+    isVoting;           // If client is currently voting
+    isSender;           // Sender does not need to compare local changes
+    isFresh;            // New client does not need to compare local changes
 
-    votes;
-    amountOfClients;
-    acknowledgements;
-    startTime;
-    lastWrite;
+    votes;              // Array of votes
+    amountOfClients;    // Number of clients connected to socket
+    acknowledgements;   // Number of clients who has sent ack packets
+    startTime;          // for timeout function, sets time when commit started.
+    lastWrite;          // If timed out we can retry last message, not currently used.
 
-    config;
+    config;             // Config values
 
     /**
-     * Initialize all variables.
+     * Initialize all variables with default values.
      */
     constructor(userConfig) {
         this.log = "";
@@ -87,6 +86,7 @@ export class CommitHandler {
             timeout: 8000,
         };
 
+        // save userConfig in config
         if(userConfig) {
             let key;
             for (key in this.config) {
@@ -101,8 +101,7 @@ export class CommitHandler {
      * Connects the CommitHandler to the socket server.
      * Default host is "ws://localhost:4001".
      * This method defines the socket behaviour.
-     *
-     * @return void
+     * Websocket.onmessage is the main component which translates the data from socket into an opcode and values
      */
     connect() {
 
@@ -120,6 +119,7 @@ export class CommitHandler {
         this.websocket.onmessage = (event) => {
             let data = event.data.split(',');
             let opcode = data[0];
+
             this._appendLog(data);
 
             switch (opcode) {
@@ -152,7 +152,8 @@ export class CommitHandler {
 
     /**
      * Reset the localBalance back to the globalBalance.
-     * If the config has overwrite: false, the client needs to reset the localBalance or commit to be able to recieve new commits.
+     * If the config has overwrite: false, the client needs to reset the localBalance or commit to be able to receive new commits.
+     * Does not reset balance on "frontend", only in commithandler.
      */
     resetBalance() {
 
@@ -161,6 +162,7 @@ export class CommitHandler {
 
     /**
      * Method for client to set the Balance.
+     * Requires isVoting to be false.
      * @param balance
      */
     setBalance(balance){
@@ -206,7 +208,7 @@ export class CommitHandler {
 
         if(data[1] === Action.newClient) {
             this.amountOfClients = parseInt(data[2]);
-            if(this.onSetup) this.onSetup(this.amountOfClients, this.isCoordinator);
+            if(this.onSetup) this.onSetup(this.amountOfClients, this.isCoordinator, this.clientId);
             return;
         }
 
@@ -220,6 +222,7 @@ export class CommitHandler {
     /**
      * Inform client of new phase.
      * If coordinator send requestVote message.
+     * set startTime and setTimeout on _handleTimeout
      * @param data
      * @private
      */
@@ -236,18 +239,19 @@ export class CommitHandler {
 
             this.websocket.send(request);
 
-            this.timedOut = false;
             this.startTime = Date.now();
-
             setTimeout(() => {
-                this._handleAcknowlegde();
+                this._handleTimeout();
             }, this.config.timeout)
         }
     }
 
     /**
      * All clients vote on incoming commit data.
-     * Checks if there are local changes and if onNewPhase method has been implemented.
+     * Checks if there are local changes and if onPhaseChange method has been implemented.
+     * If there are local changes vote no and send dataMismatch
+     * If the onPhaseChange method has not been implemented vote no and send writeError
+     * Else vote yes
      * @param data
      * @private
      */
@@ -275,7 +279,7 @@ export class CommitHandler {
                 }
             }
 
-            // this checks if the onPhaseChange method has been implemented
+            // checks if the onPhaseChange method has been implemented
             if(this.config.requireWrite) {
                 if (!this.onPhaseChange) {
                     ok = false;
@@ -312,6 +316,7 @@ export class CommitHandler {
      * @private
      */
     _handleVote(data) {
+
         let res = new Vote();
         res.id = parseInt(data[1]);
         res.yes = (data[2] === Action.voteYes);
@@ -322,15 +327,7 @@ export class CommitHandler {
         if(this.isCoordinator) {
             if(this.votes.length === this.amountOfClients) {
 
-
-                let successes = 0;
-                for(let i=0; i<this.votes.length; i++){
-                    if(this.votes[i].yes){
-                        successes++;
-                    }
-                }
-
-                if(successes === this.amountOfClients) {
+                if(!this.votes.some(vote => !vote.yes)) {
 
                     let success = Action.success +','+ this.clientId;
                     this.lastWrite = success;
@@ -387,6 +384,27 @@ export class CommitHandler {
         this.websocket.send(ack);
 
         this._resetStates();
+    }
+
+    /**
+     * Checks if all votes have been received after specified time.
+     * If missing votes we abort commit
+     * @private
+     */
+    _handleTimeout() {
+
+        let timedOut = (this.startTime + this.config.timeout) < Date.now();
+
+        if(this.votes.length !== this.amountOfClients && this.isCoordinator) {
+            if(timedOut) {
+
+                let abort =
+                    Action.rollback +","+
+                    this.clientId;
+
+                this.websocket.send(abort)
+            }
+        }
     }
 
     /**

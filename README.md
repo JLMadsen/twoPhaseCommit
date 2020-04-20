@@ -1,6 +1,6 @@
 # Two Phase Commit
 
-This project contains a react project and a class for the actual [two phase commit protocol](src/components/CommitHandler.js).
+This project contains a react project and a [class](src/components/CommitHandler.js) for the actual two phase commit protocol.
 
 The webpage serves as an example of how to use the class.
 

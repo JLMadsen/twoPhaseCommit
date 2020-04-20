@@ -29,6 +29,7 @@ export class BankPage extends Component {
         this.state = {
             // output log
             log: "",
+            clientId: 0,
 
             // visual state
             error: '',
@@ -59,10 +60,11 @@ export class BankPage extends Component {
             this.setError(message, color);
         };
 
-        this.commitHandler.onSetup = (nClients, isCoordinator) => {
+        this.commitHandler.onSetup = (nClients, isCoordinator, clientId) => {
             this.setState({
                 amountOfClients: nClients,
                 isCoordinator: isCoordinator,
+                clientId: clientId
             });
         };
 
@@ -236,7 +238,8 @@ export class BankPage extends Component {
                                                 'votes '+         this.state.votes.map(e => e.yes) + '\n,'+
                                                 'nClients '+      this.state.amountOfClients + '\n,'+
                                                 'balance '+       this.state.localBalance  + '\n,'+
-                                                'isCoordinator '+ this.state.isCoordinator
+                                                'isCoordinator '+ this.state.isCoordinator + '\n,'+
+                                                'ClientId '+      this.state.clientId
                                             }
                                         </Tooltip>
                                     }
