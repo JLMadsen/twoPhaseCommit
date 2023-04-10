@@ -1,3 +1,5 @@
+*(Archived, this was a school project)*
+
 # Two Phase Commit
 
 This project contains a react project and a [class](src/components/CommitHandler.js) for the actual two phase commit protocol.
